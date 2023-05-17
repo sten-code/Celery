@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="Celery.Controls.MessageBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Celery.Controls"
+             mc:Ignorable="d" Height="175" Width="300">
+    <Border Background="{StaticResource LightBackgroundBrush}" CornerRadius="7" 
+            BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+        <Grid>
+            <TextBlock x:Name="TitleBox" 
+                       Foreground="{StaticResource ForegroundBrush}" Text="Title"
+                       FontSize="15" Margin="20,20,45,0" VerticalAlignment="Top"/>
+            <TextBlock x:Name="ContentBox" 
+                       Foreground="{StaticResource ForegroundBrush}" Text="Content"
+                       FontSize="13" Margin="20,0,20,0" 
+                       VerticalAlignment="Center" Height="75" TextWrapping="Wrap"/>
+            <DockPanel x:Name="ButtonsBox" Margin="10,130,10,15"
+                       HorizontalAlignment="Center">
+                <Button x:Name="DefaultButton" Width="50" Background="{StaticResource LightBackgroundBrush}" 
+                        Content="Ok" Margin="2,0"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"/>
+            </DockPanel>
+            <Button x:Name="CloseButton" 
+                    HorizontalAlignment="Right" VerticalAlignment="Top" 
+                    Height="30" Width="30" Margin="10"
+                    Background="{StaticResource LightBackgroundBrush}"
+                    Click="CloseButton_Click">
+                <Path Stroke="{StaticResource ForegroundBrush}"
+                      Stretch="Uniform"
+                      Width="11"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      Data="M21 21L12 12M12 12L3 3M12 12L21.0001 3M12 12L3 21.0001"/>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>
