@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Celery.Controls"
-             mc:Ignorable="d" Height="175" Width="300">
+             mc:Ignorable="d" Height="189" Width="300">
     <Border Background="{StaticResource LightBackgroundBrush}" CornerRadius="7" 
             BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
         <Grid>
@@ -13,10 +13,14 @@
                        FontSize="15" Margin="20,20,45,0" VerticalAlignment="Top"/>
             <TextBlock x:Name="ContentBox" 
                        Foreground="{StaticResource ForegroundBrush}" Text="Content"
-                       FontSize="13" Margin="20,0,20,0" 
-                       VerticalAlignment="Center" Height="75" TextWrapping="Wrap"/>
-            <DockPanel x:Name="ButtonsBox" Margin="10,130,10,15"
-                       HorizontalAlignment="Center">
+                       FontSize="13" Margin="20,50,20,85" 
+                       VerticalAlignment="Stretch" TextWrapping="Wrap"/>
+            <TextBox x:Name="InputBox" 
+                     FontSize="13" Foreground="{StaticResource ForegroundBrush}"
+                     VerticalAlignment="Bottom" Margin="20,50,20,50" 
+                     Background="{StaticResource LightBackgroundBrush}"/>
+            <DockPanel x:Name="ButtonsBox" Margin="10,130,10,15" Height="30"
+                       HorizontalAlignment="Center" VerticalAlignment="Bottom">
                 <Button x:Name="DefaultButton" Width="50" Background="{StaticResource LightBackgroundBrush}" 
                         Content="Ok" Margin="2,0"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"/>

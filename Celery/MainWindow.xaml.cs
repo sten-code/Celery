@@ -42,7 +42,7 @@ namespace Celery
             ExtractZipFromResources("Ace", Properties.Resources.Ace, "\\bin");
             ExtractZipFromResources("dll", Properties.Resources.dll, "");
 
-            new SaveManager("settings.json");
+            new SaveManager(Config.SettingsFilePath);
 
             SettingsMenu.AddSettings(
                 new BooleanSetting("Topmost", "topmost", false, onChange: (value) =>
@@ -285,6 +285,14 @@ namespace Celery
             {
                 string filename = ofd.FileName;
                 Tabs.MakeTab(File.ReadAllText(filename), Path.GetFileNameWithoutExtension(filename));
+            }
+        }
+
+        public TextBox Console
+        {
+            get
+            {
+                return OutputBox;
             }
         }
 

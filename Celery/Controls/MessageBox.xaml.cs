@@ -9,7 +9,7 @@ namespace Celery.Controls
     {
         public event EventHandler<MessageBoxClosingEventArgs> MessageBoxClosing;
 
-        public MessageBox(string title, string content, bool closeButton)
+        public MessageBox(string title, string content, bool closeButton, bool inputBox)
         {
             InitializeComponent();
             TitleBox.Text = title;
@@ -17,6 +17,12 @@ namespace Celery.Controls
             ButtonsBox.Children.Clear();
             if (!closeButton)
                 CloseButton.Visibility = System.Windows.Visibility.Hidden;
+
+            if (!inputBox)
+            {
+                InputBox.Visibility = System.Windows.Visibility.Hidden;
+                ContentBox.Margin = new System.Windows.Thickness(20,50,20,50);
+            }
         }
 
         public void AddButton(string content, MessageBoxResult result)

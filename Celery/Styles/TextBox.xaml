@@ -8,7 +8,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
                     <Border CornerRadius="4" Padding="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
-                        <ScrollViewer Margin="0" x:Name="PART_ContentHost" />
+                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Top" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

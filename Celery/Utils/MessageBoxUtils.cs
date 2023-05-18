@@ -24,7 +24,7 @@ namespace Celery.Utils
 
             if (toDisable != null)
                 toDisable.Visibility = System.Windows.Visibility.Hidden;
-            MessageBox box = new MessageBox(title, content, closeButton);
+            MessageBox box = new MessageBox(title, content, closeButton, false);
 
             switch (buttons)
             {
@@ -65,6 +65,48 @@ namespace Celery.Utils
             while (result == MessageBoxResult.None) 
                 await Task.Delay(10);
             return result;
+        }
+
+        public static async Task<(string, MessageBoxResult)> ShowInputBox(string title, string content, bool closeButton, string defaultInput = "")
+        {
+            BlurGrid.Effect = new BlurEffect
+            {
+                Radius = 10,
+                KernelType = KernelType.Gaussian
+            };
+            WebView2 toDisable = (WebView2)Tabs.SelectedContent;
+            if (toDisable != null)
+                toDisable.Visibility = System.Windows.Visibility.Hidden;
+
+            MessageBox box = new MessageBox(title, content, closeButton, true);
+            box.InputBox.Text = defaultInput;
+            box.AddButton("Ok", MessageBoxResult.Ok);
+            if (closeButton)
+            {
+                box.AddButton("Cancel", MessageBoxResult.Cancel);
+            }
+            Border border = new Border
+            {
+                Background = new SolidColorBrush(Colors.Transparent)
+            };
+            MessageBoxResult result = MessageBoxResult.None;
+            string input = "";
+            box.MessageBoxClosing += (s, e) =>
+            {
+                result = e.Result;
+                input = box.InputBox.Text;
+                BlurGrid.Effect = null;
+                BaseGrid.Children.Remove(box);
+                BaseGrid.Children.Remove(border);
+                if (toDisable != null)
+                    toDisable.Visibility = System.Windows.Visibility.Visible;
+            };
+
+            BaseGrid.Children.Add(border);
+            BaseGrid.Children.Add(box);
+            while (result == MessageBoxResult.None)
+                await Task.Delay(10);
+            return (input, result);
         }
     }
 

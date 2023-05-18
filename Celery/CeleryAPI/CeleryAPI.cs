@@ -3,8 +3,8 @@ using System.Windows;
 using System;
 using Celery.Utils;
 using System.Windows.Threading;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Celery.CeleryAPI
 {
@@ -394,63 +394,80 @@ namespace Celery.CeleryAPI
             };
             updateTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             updateTimer.Start();
+
+            if (!Directory.Exists(Config.CeleryTemp))
+                Directory.CreateDirectory(Config.CeleryTemp);
+            File.WriteAllText(Config.CeleryDir, Config.ApplicationPath + "\\");
+            File.WriteAllText(Config.CeleryHome, Path.Combine(Config.ApplicationPath, "dll") + "\\");
         }
 
         public async void Inject(bool notify = true)
         {
-            foreach (ProcInfo pinfo in ProcessUtil.openProcessesByName("Windows10Universal.exe"))
-            {
-                Debug.WriteLine("Injecting into pid: " + pinfo.processId);
-                if (Injector.isInjected(pinfo) && notify)
-                {
-                    await MessageBoxUtils.ShowMessage("Already Attached", $"Celery is already attached to Roblox (PID: {pinfo.processId})", true, MessageBoxButtons.Ok);
-                    continue;
-                }
-
-                InjectionStatus status = await Injector.injectPlayer(pinfo, notify);
-                if (notify)
-                {
-                    switch (status)
-                    {
-                        case InjectionStatus.SUCCESS:
-                            await MessageBoxUtils.ShowMessage("Success", "Celery injected successfully!", true, MessageBoxButtons.Ok);
-                            break;
-                        case InjectionStatus.ALREADY_INJECTED:
-                            await MessageBoxUtils.ShowMessage("Error", "Celery is already injected.", true, MessageBoxButtons.Ok);
-                            break;
-                        case InjectionStatus.ALREADY_INJECTING:
-                            break;
-                        case InjectionStatus.FAILED:
-                            await MessageBoxUtils.ShowMessage("Error", "Injection failed! Unknown error.", true, MessageBoxButtons.Ok);
-                            break;
-                        case InjectionStatus.FAILED_ADMINISTRATOR_ACCESS:
-                            await MessageBoxUtils.ShowMessage("Admin rights", "Please run Celery as an administrator.", true, MessageBoxButtons.Ok);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-
-        public async void Execute(string script)
-        {
-            List<ProcInfo> procs = Injector.getInjectedProcesses();
+            List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
             if (procs.Count <= 0)
             {
-                await MessageBoxUtils.ShowMessage("Open Roblox", "Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.", true, MessageBoxButtons.Ok);
+                Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
                 return;
             }
 
             foreach (ProcInfo pinfo in procs)
             {
-                if (!Injector.isInjected(pinfo))
+                if (Injector.isInjected(pinfo))
                 {
-                    await MessageBoxUtils.ShowMessage("Not Attached", $"Celery isn't attached to Roblox (PID: {pinfo.processId})", true, MessageBoxButtons.Ok);
+                    Logger.Log($"Already injected (PID: {pinfo.processId})");
                     continue;
                 }
+
+                Logger.Log($"Injecting... (PID: {pinfo.processId})");
+                InjectionStatus status = await Injector.injectPlayer(pinfo, notify);
+                switch (status)
+                {
+                    case InjectionStatus.SUCCESS:
+                        Logger.Log($"Injected successfully!");
+                        break;
+                    case InjectionStatus.ALREADY_INJECTED:
+                        Logger.Log($"Celery is already injected.");
+                        break;
+                    case InjectionStatus.ALREADY_INJECTING:
+                        break;
+                    case InjectionStatus.FAILED:
+                        Logger.Log($"Injection failed!");
+                        break;
+                    case InjectionStatus.FAILED_ADMINISTRATOR_ACCESS:
+                        Logger.Log($"Admin rights required.");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public void Execute(string script)
+        {
+            List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
+            if (procs.Count <= 0)
+            {
+                Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
+                return;
+            }
+
+            List<ProcInfo> injectedProcs = procs.Where(p => Injector.isInjected(p)).ToList();
+            if (injectedProcs.Count <= 0)
+            {
+                Logger.Log("Celery not attached.");
+                return;
+            }
+
+            Logger.Log($"Executing...");
+            foreach (ProcInfo pinfo in injectedProcs)
+            {
                 Injector.sendScript(pinfo, script);
             }
+        }
+
+        public bool IsInjected()
+        {
+            return Injector.getInjectedProcesses().Count > 0;
         }
 
     }

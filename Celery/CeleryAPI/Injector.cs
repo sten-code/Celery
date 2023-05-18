@@ -228,15 +228,6 @@ namespace Celery.CeleryAPI
         public static List<ProcInfo> getInjectedProcesses()
         {
             List<ProcInfo> results = new List<ProcInfo>();
-            /*
-            foreach (ProcInfo pinfo in postInjectedPlayer)
-            {
-                if (isInjected(pinfo))
-                {
-                    results.Add(pinfo);
-                }
-            }
-            */
             foreach (ProcInfo pinfo in openProcessesByName(InjectProcessName))
             {
                 if (isInjected(pinfo))
@@ -244,7 +235,6 @@ namespace Celery.CeleryAPI
                     results.Add(pinfo);
                 }
             }
-
             return results;
         }
     }
