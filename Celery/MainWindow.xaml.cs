@@ -41,8 +41,12 @@ namespace Celery
             if (!Directory.Exists(Config.ScriptsPath)) 
                 Directory.CreateDirectory(Config.ScriptsPath);
 
+
             ExtractZipFromResources("Ace", Properties.Resources.Ace, "\\bin");
             ExtractZipFromResources("dll", Properties.Resources.dll, "");
+
+            if (!Directory.Exists(Config.SettingsPath))
+                Directory.CreateDirectory(Config.SettingsPath);
 
             new SaveManager(Config.SettingsFilePath);
 
@@ -315,12 +319,10 @@ namespace Celery
             if (SettingsVisible)
             {
                 AnimationUtils.AnimateMargin(SettingsMenu, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), new Thickness(), AnimationUtils.EaseInOut);
-                //AnimationUtils.AnimateWidth(SettingsMenu, 0, 175, AnimationUtils.EaseInOut);
             }
             else
             {
                 AnimationUtils.AnimateMargin(SettingsMenu, new Thickness(), new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut);
-                //AnimationUtils.AnimateWidth(SettingsMenu, 175, 0, AnimationUtils.EaseInOut);
             }
         }
 
