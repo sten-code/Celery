@@ -37,6 +37,9 @@ Enabling Topmost allows Celery to be on top of all other programs, it can only b
 ## Auto Attach
 Auto Attach will attach Celery the moment you open Roblox or Celery itself.
 
+## Startup Animation
+If enabled there will be an animation of 3.5 seconds when you start Celery
+
 <h1 align="center">API Documentation</h1>
 
 https://celeryrblx.github.io/
