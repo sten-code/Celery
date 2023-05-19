@@ -55,7 +55,7 @@ namespace Celery
                 {
                     _autoAttach = value;
                 }),
-                new BooleanSetting("Start Animation", "startupanimation", true, onChange: (value) =>
+                new BooleanSetting("Startup Animation", "startupanimation", true, onChange: (value) =>
                 {
                     StartupAnimation = value;
                 })
