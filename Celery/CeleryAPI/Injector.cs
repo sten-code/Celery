@@ -6,39 +6,36 @@ using System.Threading;
 using System.Security.Principal;
 using Celery.Utils;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Celery.CeleryAPI
 {
     public class Injector : ProcessUtil
     {
-        public static bool consoleInUse = false;
-        private static bool ConsoleLoaded = false;
+        public static bool ConsoleLoaded = false;
         public static string InjectProcessName = "Windows10Universal.exe";
         public static string InjectFileName = "celeryuwp.bin";
 
-        public static void showConsole()
+        public static void ShowConsole()
         {
             if (!ConsoleLoaded)
             {
                 ConsoleLoaded = true;
-                consoleInUse = true;
                 Imports.ConsoleHelper.Initialize();
             }
             else
             {
-                consoleInUse = true;
                 Imports.ShowWindow(Imports.GetConsoleWindow(), Imports.SW_SHOW);
             }
         }
 
-        public static void hideConsole()
+        public static void HideConsole()
         {
-            consoleInUse = false;
             Imports.ConsoleHelper.Clear();
             Imports.ShowWindow(Imports.GetConsoleWindow(), Imports.SW_HIDE);
         }
 
-        public bool findProcess(ref ProcInfo outPInfo)
+        public bool FindProcess(ref ProcInfo outPInfo)
         {
             foreach (ProcInfo pinfo in openProcessesByName(InjectProcessName))
             {
@@ -49,7 +46,7 @@ namespace Celery.CeleryAPI
             return false;
         }
 
-        public static bool isInjected(ProcInfo pinfo)
+        public static bool IsInjected(ProcInfo pinfo)
         {
             if (pinfo.isOpen())
                 if (pinfo.readByte(Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIcon") + 3) == 0x43)
@@ -59,11 +56,11 @@ namespace Celery.CeleryAPI
         }
 
 
-        public static void sendScript(ProcInfo pinfo, string source)
+        public static void SendScript(ProcInfo pinfo, string source)
         {
-            if (!isInjected(pinfo)) return;
+            if (!IsInjected(pinfo)) return;
 
-            var functionPtr = Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIcon");
+            int functionPtr = Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIcon");
 
             // to-do:
             // if the last script hasn't been executed yet
@@ -81,7 +78,7 @@ namespace Celery.CeleryAPI
                 if (dontGoToInf++ > 100) return;
             }
 
-            if (!isInjected(pinfo)) return;
+            if (!IsInjected(pinfo)) return;
             // VVV this check is causing the run button to act slow ??? VVV
 
             // Wait for a script to finish executing and old source deallocated ...
@@ -92,7 +89,7 @@ namespace Celery.CeleryAPI
             int nothing = 0;
             char[] chars = source.ToCharArray(0, source.Length);
             byte[] bytesUtf8 = Encoding.UTF8.GetBytes(chars);
-            var sourcePtr = Imports.VirtualAllocEx(pinfo.handle, 0, bytesUtf8.Length, Imports.MEM_RESERVE | Imports.MEM_COMMIT, Imports.PAGE_READWRITE);
+            int sourcePtr = Imports.VirtualAllocEx(pinfo.handle, 0, bytesUtf8.Length, Imports.MEM_RESERVE | Imports.MEM_COMMIT, Imports.PAGE_READWRITE);
             Imports.WriteProcessMemory(pinfo.handle, sourcePtr, bytesUtf8, bytesUtf8.Length, ref nothing);
 
             pinfo.writeUInt32(functionPtr + 8, 1); // Type `1` = script was sent to be executed
@@ -106,18 +103,17 @@ namespace Celery.CeleryAPI
         private static bool isInjectingPlayer = false;
         private static bool skipAdministrative = false;
 
-        public static async Task<InjectionStatus> injectPlayer(ProcInfo pinfo, bool notify)
+        public static async Task<InjectionStatus> InjectPlayer(ProcInfo pinfo, bool notify)
         {
             if (isInjectingPlayer)
                 return InjectionStatus.ALREADY_INJECTING;
 
-            if (isInjected(pinfo))
+            if (IsInjected(pinfo))
                 return InjectionStatus.ALREADY_INJECTED;
 
             if (!skipAdministrative)
             {
                 AppDomain myDomain = Thread.GetDomain();
-
                 myDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
                 WindowsPrincipal myPrincipal = (WindowsPrincipal)Thread.CurrentPrincipal;
                 if (!myPrincipal.IsInRole(WindowsBuiltInRole.Administrator))
@@ -188,7 +184,7 @@ namespace Celery.CeleryAPI
             bool mapResult = MapInject.ManualMap(pinfo.processRef, AppDomain.CurrentDomain.BaseDirectory + "dll/" + InjectFileName);
             if (mapResult)
             {
-                while (pinfo.isOpen() && !isInjected(pinfo))
+                while (pinfo.isOpen() && !IsInjected(pinfo))
                 {
                     Thread.Sleep(10);
                 }
@@ -197,8 +193,7 @@ namespace Celery.CeleryAPI
                 postInjectedPlayer.Add(pinfo);
 
                 isInjectingPlayer = false;
-
-                showConsole();
+                //ShowConsole();
 
                 /*
                 Imports.AllocConsole();
@@ -230,7 +225,7 @@ namespace Celery.CeleryAPI
             List<ProcInfo> results = new List<ProcInfo>();
             foreach (ProcInfo pinfo in openProcessesByName(InjectProcessName))
             {
-                if (isInjected(pinfo))
+                if (IsInjected(pinfo))
                 {
                     results.Add(pinfo);
                 }

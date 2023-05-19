@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationIcon>CeleryIcon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Web.WebView2.Core, Version=1.0.1774.30, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.WebView2.1.0.1774.30\lib\net45\Microsoft.Web.WebView2.Core.dll</HintPath>
@@ -72,6 +75,9 @@
       <DependentUpon>SettingsMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\StringSetting.cs" />
+    <Compile Include="Startup.xaml.cs">
+      <DependentUpon>Startup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\EyeStep.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="CeleryAPI\Imports.cs" />
@@ -109,6 +115,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Settings\SettingsMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Startup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -184,6 +194,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\CeleryUpdater.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="CeleryIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\Microsoft.Web.WebView2.targets')" />

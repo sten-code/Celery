@@ -19,11 +19,13 @@ namespace Celery
 {
     public partial class MainWindow : Window
     {
+
         public CeleryAPI.CeleryAPI Celery;
         public WebClient WebClient;
 
         private bool _autoAttach = false;
-
+        public bool StartupAnimation;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -52,6 +54,10 @@ namespace Celery
                 new BooleanSetting("Auto Attach", "autoattach", false, onChange: (value) =>
                 {
                     _autoAttach = value;
+                }),
+                new BooleanSetting("Start Animation", "startupanimation", true, onChange: (value) =>
+                {
+                    StartupAnimation = value;
                 })
             );
 
@@ -307,10 +313,10 @@ namespace Celery
         {
             SettingsVisible = !SettingsVisible;
             if (SettingsVisible)
-                AnimationUtils.AnimateWidth(SettingsMenu, 0, 150, AnimationUtils.EaseInOut);
+                AnimationUtils.AnimateWidth(SettingsMenu, 0, 175, AnimationUtils.EaseInOut);
             else
-                AnimationUtils.AnimateWidth(SettingsMenu, 150, 0, AnimationUtils.EaseInOut);
+                AnimationUtils.AnimateWidth(SettingsMenu, 175, 0, AnimationUtils.EaseInOut);
         }
-    }
 
+    }
 }

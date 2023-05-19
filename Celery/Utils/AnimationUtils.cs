@@ -13,11 +13,16 @@ namespace Celery.Utils
             EasingMode = EasingMode.EaseInOut
         };
 
+        public static IEasingFunction EaseIn { get; } = new QuarticEase
+        {
+            EasingMode = EasingMode.EaseIn
+        };
+
         public static IEasingFunction EaseOut { get; } = new QuarticEase
         {
             EasingMode = EasingMode.EaseOut
         };
-
+        
         public static void AnimateMargin(DependencyObject obj, Thickness get, Thickness set, IEasingFunction easing, int duration = 500)
         {
             AnimateThicknessProperty(obj, get, set, FrameworkElement.MarginProperty, easing, duration);

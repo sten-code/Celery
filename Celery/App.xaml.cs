@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 
 namespace Celery
 {
@@ -6,9 +7,15 @@ namespace Celery
     {
         public static MainWindow Instance { get; set; }
 
-        private void App_Startup(object sender, StartupEventArgs e)
+        private async void App_Startup(object sender, StartupEventArgs e)
         {
             Instance = new MainWindow();
+            if (Instance.StartupAnimation)
+            {
+                Startup startup = new Startup();
+                startup.Show();
+                await Task.Delay(3500);
+            }
             Instance.Show();
         }
     }

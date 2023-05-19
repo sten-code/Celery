@@ -29,7 +29,7 @@ namespace Celery.CeleryAPI
                 from both the UI (here) and the DLL.
 
                  */
-                foreach (var pinfo in Injector.getInjectedProcesses())
+                foreach (ProcInfo pinfo in Injector.getInjectedProcesses())
                 {
                     int functionPtr = Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIconEx");
 
@@ -44,8 +44,8 @@ namespace Celery.CeleryAPI
                     int length = pinfo.readInt32(functionPtr + 0x28);
                     if (type == 1 || type == 2 || type == 3 || type == 4) // output type that was sent
                     {
-                        var ptr = pinfo.readInt32(functionPtr + 0x24);
-                        var str = pinfo.readString(ptr, length);
+                        int ptr = pinfo.readInt32(functionPtr + 0x24);
+                        string str = pinfo.readString(ptr, length);
 
                         //AddOutput(str, (OutputType)(type - 1));
 
@@ -108,7 +108,7 @@ namespace Celery.CeleryAPI
                         if (printSize > 0)
                         {
                             string str = pinfo.readString(printPointer, printSize);
-                            Console.Out.WriteLine(str);
+                            Logger.Log(str);
                         }
                     }
                     else if (transmitType == 2) // PRINT_CONSOLEW (wstring data)
@@ -118,7 +118,7 @@ namespace Celery.CeleryAPI
                         if (printSize > 0)
                         {
                             string str = pinfo.readWString(printPointer, printSize);
-                            Console.Out.WriteLine(str);
+                            Logger.Log(str);
                         }
                     }
                     else if (transmitType == 3) // string READ_FILE (wstring filePath)
@@ -132,7 +132,6 @@ namespace Celery.CeleryAPI
                             {
                                 string contents = File.ReadAllText(filePath);
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, contents.Length + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
-
                                 pinfo.writeString(contentsPointer, contents);
                                 pinfo.writeInt32(dataStart + 12, contents.Length);
                                 pinfo.writeInt32(dataStart + 16, contentsPointer);
@@ -151,11 +150,10 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Reading file (Path: {filePath})");
 
                             if (File.Exists(filePath))
                             {
-                                Console.Out.WriteLine("File eixsts");
                                 string contents = File.ReadAllText(filePath);
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
 
@@ -179,11 +177,11 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize >= 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Writing file path: " + filePath);
+                            Logger.Log($"Writing to file (Path: {filePath}");
 
                             byte[] data = pinfo.readBytes(dataPointer, dataSize);
                             //var data = pinfo.readString(dataPointer, dataSize);
-                            //Console.Out.WriteLine(data);
+                            //Logger.Log(data);
 
                             FileUtils.checkCreateFile(filePath);
                             try { File.WriteAllBytes(filePath, data); } catch { }
@@ -198,11 +196,11 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize >= 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Writing to file (Path: {filePath})");
 
                             byte[] data = pinfo.readBytes(dataPointer, dataSize * 2);
                             //var data = pinfo.readWString(dataPointer, dataSize);
-                            //Console.Out.WriteLine(data);
+                            //Logger.Log(data);
 
                             FileUtils.checkCreateFile(filePath);
                             try { File.WriteAllBytes(filePath, data); } catch { }
@@ -215,7 +213,6 @@ namespace Celery.CeleryAPI
                         if (printSize > 0)
                         {
                             string str = pinfo.readString(printPointer, printSize);
-
                             Imports.MessageBoxA(Imports.FindWindow(null, "Roblox"), str, "[Celery]", 0);
                         }
                     }
@@ -226,7 +223,6 @@ namespace Celery.CeleryAPI
                         if (printSize > 0)
                         {
                             string str = pinfo.readWString(printPointer, printSize);
-
                             Imports.MessageBoxW(Imports.FindWindow(null, "Roblox"), str, "", 0);
                         }
                     }
@@ -239,11 +235,11 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Appending to file (Path: {filePath})");
 
                             string data = pinfo.readString(dataPointer, dataSize);
                             //var data = pinfo.readString(dataPointer, dataSize);
-                            //Console.Out.WriteLine(data);
+                            //Logger.Log(data);
 
                             FileUtils.checkCreateFile(filePath);
                             try { File.AppendAllText(filePath, data); } catch { }
@@ -258,13 +254,13 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Appending to file (Path: {filePath}");
 
                             byte[] bytes = pinfo.readBytes(dataPointer, dataSize * 2);
                             //var data = pinfo.readWString(dataPointer, dataSize);
-                            //Console.Out.WriteLine(data);
-                            string data = "";
+                            //Logger.Log(data);
 
+                            string data = "";
                             foreach (byte b in bytes)
                                 data += (char)b;
 
@@ -279,7 +275,7 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Creating folder (Path: {filePath})");
 
                             try { Directory.CreateDirectory(filePath); } catch { }
                         }
@@ -291,7 +287,7 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Deleting file (Path: {filePath})");
 
                             if (File.Exists(filePath))
                                 try { File.Delete(filePath); } catch { }
@@ -304,7 +300,7 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading file path: " + filePath);
+                            Logger.Log($"Deleting folder (Path: {filePath})");
 
                             if (Directory.Exists(filePath))
                                 try { Directory.Delete(filePath); } catch { }
@@ -317,13 +313,12 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string dirPath = pinfo.readWString(filePathPointer, filePathSize);
-                            //Console.Out.WriteLine("Reading path: " + dirPath);
+                            Logger.Log($"Listing files (Path: {dirPath})");
 
                             if (Directory.Exists(dirPath))
                             {
                                 string contents = "";
-
-                                foreach (string filePath in System.IO.Directory.GetFiles(dirPath))
+                                foreach (string filePath in Directory.GetFiles(dirPath))
                                 {
                                     int wsStart = filePath.LastIndexOf("dll\\workspace") + 14;
                                     if (wsStart < filePath.Length)
@@ -332,11 +327,9 @@ namespace Celery.CeleryAPI
                                         contents += "|";
                                     }
                                 }
-
                                 contents.TrimEnd('|');
 
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
-
                                 pinfo.writeWString(contentsPointer, contents);
                                 pinfo.writeInt32(dataStart + 12, contents.Length);
                                 pinfo.writeInt32(dataStart + 16, contentsPointer);
@@ -375,14 +368,16 @@ namespace Celery.CeleryAPI
                         if (printSize > 0)
                         {
                             string str = pinfo.readWString(printPointer, printSize);
+                            Logger.Log($"Setting clipboard (Data: {str})");
                             Clipboard.SetText(str);
                         }
                     }
                     else if (transmitType == 18) // wstring getclipboard
                     {
                         string contents = Clipboard.GetText();
-                        int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
+                        Logger.Log($"Reading clipboard (Data: {contents})");
 
+                        int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
                         pinfo.writeWString(contentsPointer, contents);
                         pinfo.writeInt32(dataStart + 4, contents.Length);
                         pinfo.writeInt32(dataStart + 8, contentsPointer);
@@ -406,20 +401,22 @@ namespace Celery.CeleryAPI
             List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
             if (procs.Count <= 0)
             {
-                Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
+                if (notify)
+                    Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
                 return;
             }
 
             foreach (ProcInfo pinfo in procs)
             {
-                if (Injector.isInjected(pinfo))
+                if (Injector.IsInjected(pinfo))
                 {
-                    Logger.Log($"Already injected (PID: {pinfo.processId})");
+                    if (notify)
+                        Logger.Log($"Already injected (PID: {pinfo.processId})");
                     continue;
                 }
 
                 Logger.Log($"Injecting... (PID: {pinfo.processId})");
-                InjectionStatus status = await Injector.injectPlayer(pinfo, notify);
+                InjectionStatus status = await Injector.InjectPlayer(pinfo, notify);
                 switch (status)
                 {
                     case InjectionStatus.SUCCESS:
@@ -451,7 +448,7 @@ namespace Celery.CeleryAPI
                 return;
             }
 
-            List<ProcInfo> injectedProcs = procs.Where(p => Injector.isInjected(p)).ToList();
+            List<ProcInfo> injectedProcs = procs.Where(p => Injector.IsInjected(p)).ToList();
             if (injectedProcs.Count <= 0)
             {
                 Logger.Log("Celery not attached.");
@@ -461,7 +458,7 @@ namespace Celery.CeleryAPI
             Logger.Log($"Executing...");
             foreach (ProcInfo pinfo in injectedProcs)
             {
-                Injector.sendScript(pinfo, script);
+                Injector.SendScript(pinfo, script);
             }
         }
 

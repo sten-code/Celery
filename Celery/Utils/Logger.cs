@@ -6,7 +6,7 @@ namespace Celery.Utils
     {
         public static void Log(string message)
         {
-            App.Instance.Console.Text += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
+            App.Instance.Console.Text += $"[{DateTime.Now:HH:mm:ss}] {message.Trim()}\n";
             App.Instance.Console.ScrollToEnd();
         }
     }
