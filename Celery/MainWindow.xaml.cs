@@ -22,9 +22,9 @@ namespace Celery
 
         public CeleryAPI.CeleryAPI Celery;
         public WebClient WebClient;
+        public bool StartupAnimation;
 
         private bool _autoAttach = false;
-        public bool StartupAnimation;
         
         public MainWindow()
         {
@@ -265,7 +265,7 @@ namespace Celery
 
             SaveFileDialog sfd = new SaveFileDialog
             {
-                FileName = "Script",
+                FileName = ((TabItem)Tabs.SelectedValue).Header.ToString(),
                 DefaultExt = ".lua",
                 Filter = "Lua Files|*.lua",
                 InitialDirectory = Config.ScriptsPath
@@ -313,10 +313,22 @@ namespace Celery
         {
             SettingsVisible = !SettingsVisible;
             if (SettingsVisible)
-                AnimationUtils.AnimateWidth(SettingsMenu, 0, 175, AnimationUtils.EaseInOut);
+            {
+                AnimationUtils.AnimateMargin(SettingsMenu, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), new Thickness(), AnimationUtils.EaseInOut);
+                //AnimationUtils.AnimateWidth(SettingsMenu, 0, 175, AnimationUtils.EaseInOut);
+            }
             else
-                AnimationUtils.AnimateWidth(SettingsMenu, 175, 0, AnimationUtils.EaseInOut);
+            {
+                AnimationUtils.AnimateMargin(SettingsMenu, new Thickness(), new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut);
+                //AnimationUtils.AnimateWidth(SettingsMenu, 175, 0, AnimationUtils.EaseInOut);
+            }
         }
 
+        private void ScriptList_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // For some reason when you apply an animation to something you can't change that particular property anymore, the only way to change that property is with an animation
+            if (!SettingsVisible)
+                AnimationUtils.AnimateMargin(SettingsMenu, SettingsMenu.Margin, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut, 0);
+        }
     }
 }

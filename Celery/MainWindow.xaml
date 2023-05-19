@@ -16,9 +16,7 @@
         <shell:WindowChrome CaptionHeight="30" 
                             UseAeroCaptionButtons="False" 
                             NonClientFrameEdges="None"
-                            ResizeBorderThickness="5"
-                            GlassFrameThickness="0"
-                            CornerRadius="0"/>
+                            ResizeBorderThickness="5"/>
     </shell:WindowChrome.WindowChrome>
     <Border Background="{StaticResource BackgroundBrush}">
         <Grid x:Name="BaseGrid">
@@ -35,7 +33,7 @@
             <Grid x:Name="BlurGrid" Margin="-10">
                 <Grid x:Name="MainGrid" Margin="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="175"/>
+                        <ColumnDefinition Width="175" MinWidth="140" MaxWidth="650" />
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -44,11 +42,11 @@
                         <RowDefinition Height="40"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <ListBox x:Name="ScriptList" Grid.Column="0" Grid.Row="3" Margin="5,5,0,5"/>
+                    <ListBox x:Name="ScriptList" Grid.Column="0" Grid.Row="3" Margin="5,5,0,5" SizeChanged="ScriptList_SizeChanged"/>
                     <Grid Grid.Column="2" Grid.Row="3">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="2*"/>
-                            <RowDefinition Height="1*" MinHeight="25"/>
+                            <RowDefinition/>
+                            <RowDefinition Height="125" MinHeight="25"/>
                         </Grid.RowDefinitions>
                         <controls:Tabs x:Name="Tabs" Grid.Row="0"/>
                         <Border Grid.Row="1" Height="1" VerticalAlignment="Top" Background="{StaticResource BorderBrush}"/>
@@ -149,7 +147,8 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <settings:SettingsMenu x:Name="SettingsMenu" Grid.Row="3" HorizontalAlignment="Left" Width="0"/>
+                    <settings:SettingsMenu x:Name="SettingsMenu" Grid.Row="3" Margin="0,0,175,0"/>
+                    <GridSplitter Grid.Row="3" Grid.Column="0" Width="2" Background="Transparent"/>
                 </Grid>
             </Grid>
         </Grid>
