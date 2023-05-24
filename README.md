@@ -44,7 +44,7 @@ If enabled there will be an animation of 3.5 seconds when you start Celery.
 Debugging Mode will give you way more information inside the console.
 
 ## Theme
-The current theme that is applied, click [here](#theme) if you want to create your own theme.
+The current theme that is applied, click [here](#themetutorial) if you want to create your own theme.
 
 ## Save Tabs
 If enabled, the tabs will save when Celery is closed, is restarted after changing themes and every x amount of seconds where x is the amount set by the Save Tabs Delay setting.
@@ -53,7 +53,7 @@ If enabled, the tabs will save when Celery is closed, is restarted after changin
 The delay between each save of the tabs.
 
 
-<h1 align="center" name="theme">Create your own theme</h1>
+<a name="themetutorial"></a><h1 align="center">Create your own theme</h1>
 
 - Go to `%appdata%\Celery\Themes`, you can do this by pressing `Windows Key + R` and typing `%appdata%\Celery\Themes`
 - Create a new file and name it whatever you want but make sure you have the file extension as `.xaml`
