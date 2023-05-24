@@ -10,13 +10,13 @@
 							CornerRadius="3"
 							Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"
 							SnapsToDevicePixels="True"
-							Background="{StaticResource BorderBrush}"/>
+							Background="{DynamicResource BorderBrush}"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="UIElement.IsMouseOver" Value="True">
-                            <Setter TargetName="rectangle" Property="Background" Value="{StaticResource LightBorderBrush}"/>
+                            <Setter TargetName="rectangle" Property="Background" Value="{DynamicResource LightBorderBrush}"/>
                         </Trigger>
                         <Trigger Property="Thumb.IsDragging" Value="True">
-                            <Setter TargetName="rectangle" Property="Background" Value="{StaticResource HighlightBrush}"/>
+                            <Setter TargetName="rectangle" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -28,7 +28,7 @@
         <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
         <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="Width" Value="6"/>
         <Setter Property="MinWidth" Value="6"/>
         <Setter Property="Margin" Value="5,1,3,1"/>

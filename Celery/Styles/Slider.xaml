@@ -42,8 +42,8 @@
                                                         <Setter.Value>
                                                             <ControlTemplate TargetType="RepeatButton">
                                                                 <Border SnapsToDevicePixels="True"
-                                                                        Background="{StaticResource BackgroundBrush}" 
-                                                                        BorderBrush="{StaticResource BorderBrush}" 
+                                                                        Background="{DynamicResource BackgroundBrush}" 
+                                                                        BorderBrush="{DynamicResource BorderBrush}" 
                                                                         BorderThickness="1" 
                                                                         CornerRadius="1"
                                                                         Height="3"/>
@@ -65,8 +65,8 @@
                                                             <ControlTemplate TargetType="Thumb">
                                                                 <Ellipse Height="10" Width="10" 
                                                                          StrokeThickness="1"
-                                                                         Fill="{StaticResource BackgroundBrush}"
-                                                                         Stroke="{StaticResource ForegroundBrush}"/>
+                                                                         Fill="{DynamicResource BackgroundBrush}"
+                                                                         Stroke="{DynamicResource ForegroundBrush}"/>
                                                             </ControlTemplate>
                                                         </Setter.Value>
                                                     </Setter>
@@ -87,8 +87,8 @@
                                                             <ControlTemplate TargetType="RepeatButton">
                                                                 <Border BorderThickness="1"
                                                                         CornerRadius="1"
-                                                                        BorderBrush="{StaticResource BorderBrush}" 
-                                                                        Background="{StaticResource BackgroundBrush}" 
+                                                                        BorderBrush="{DynamicResource BorderBrush}" 
+                                                                        Background="{DynamicResource BackgroundBrush}" 
                                                                         Height="3"/>
                                                             </ControlTemplate>
                                                         </Setter.Value>

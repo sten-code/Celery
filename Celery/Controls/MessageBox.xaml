@@ -5,32 +5,32 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Celery.Controls"
              mc:Ignorable="d" Height="189" Width="300">
-    <Border Background="{StaticResource LightBackgroundBrush}" CornerRadius="7" 
-            BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+    <Border Background="{DynamicResource LightBackgroundBrush}" CornerRadius="7" 
+            BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
         <Grid>
             <TextBlock x:Name="TitleBox" 
-                       Foreground="{StaticResource ForegroundBrush}" Text="Title"
+                       Foreground="{DynamicResource ForegroundBrush}" Text="Title"
                        FontSize="15" Margin="20,20,45,0" VerticalAlignment="Top"/>
             <TextBlock x:Name="ContentBox" 
-                       Foreground="{StaticResource ForegroundBrush}" Text="Content"
+                       Foreground="{DynamicResource ForegroundBrush}" Text="Content"
                        FontSize="13" Margin="20,50,20,85" 
                        VerticalAlignment="Stretch" TextWrapping="Wrap"/>
             <TextBox x:Name="InputBox" 
-                     FontSize="13" Foreground="{StaticResource ForegroundBrush}"
+                     FontSize="13" Foreground="{DynamicResource ForegroundBrush}"
                      VerticalAlignment="Bottom" Margin="20,50,20,50" 
-                     Background="{StaticResource LightBackgroundBrush}"/>
+                     Background="{DynamicResource LightBackgroundBrush}"/>
             <DockPanel x:Name="ButtonsBox" Margin="10,130,10,15" Height="30"
                        HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                <Button x:Name="DefaultButton" Width="50" Background="{StaticResource LightBackgroundBrush}" 
+                <Button x:Name="DefaultButton" Width="50" Background="{DynamicResource LightBackgroundBrush}" 
                         Content="Ok" Margin="2,0"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"/>
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
             </DockPanel>
             <Button x:Name="CloseButton" 
                     HorizontalAlignment="Right" VerticalAlignment="Top" 
                     Height="30" Width="30" Margin="10"
-                    Background="{StaticResource LightBackgroundBrush}"
+                    Background="{DynamicResource LightBackgroundBrush}"
                     Click="CloseButton_Click">
-                <Path Stroke="{StaticResource ForegroundBrush}"
+                <Path Stroke="{DynamicResource ForegroundBrush}"
                       Stretch="Uniform"
                       Width="11"
                       StrokeStartLineCap="Round" StrokeEndLineCap="Round"

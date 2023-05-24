@@ -26,7 +26,6 @@ namespace Celery.Settings
             grid.Height = 55;
             ComboBox comboBox = new ComboBox
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 Margin = new Thickness(5),
                 SelectedItem = Value,
@@ -38,8 +37,8 @@ namespace Celery.Settings
                 if (OnChangeEvent != null)
                     OnChangeEvent(Value, false);
 
-                if (SaveManager.Instance != null)
-                    SaveManager.Instance.Save(Identifier, Value);
+                if (SettingsSaveManager.Instance != null)
+                    SettingsSaveManager.Instance.Save(Identifier, Value);
             };
             grid.Children.Add(comboBox);
             return grid;

@@ -37,10 +37,9 @@ namespace Celery.Settings
             };
             Slider slider = new Slider
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Bottom,
-                Margin = new Thickness(5),
-                Width = 80,
+                Margin = new Thickness(45,5,10,5),
                 Value = Value,
                 Minimum = Minimum,
                 Maximum = Maximum,
@@ -65,8 +64,8 @@ namespace Celery.Settings
             if (OnChangeEvent != null)
                 OnChangeEvent(Value);
 
-            if (SaveManager.Instance != null)
-                SaveManager.Instance.Save(Identifier, Value);
+            if (SettingsSaveManager.Instance != null)
+                SettingsSaveManager.Instance.Save(Identifier, Value);
         }
     }
 }

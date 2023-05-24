@@ -40,8 +40,8 @@ namespace Celery.Settings
             if (OnChangeEvent != null)
                 OnChangeEvent(Value);
 
-            if (SaveManager.Instance != null)
-                SaveManager.Instance.Save(Identifier, Value);
+            if (SettingsSaveManager.Instance != null)
+                SettingsSaveManager.Instance.Save(Identifier, Value);
         }
 
     }

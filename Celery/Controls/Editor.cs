@@ -27,7 +27,7 @@ namespace Celery.Controls
 
         public Editor(string name)
         {
-            Color bg = (Color)Application.Current.MainWindow.FindResource("BackgroundColor");
+            Color bg = (Color)Application.Current.Resources["BackgroundColor"];
             DefaultBackgroundColor = System.Drawing.Color.FromArgb(bg.R, bg.G, bg.B);
             Source = new Uri(Path.Combine(Config.BinPath, name, $"{name}.html"));
             CoreWebView2InitializationCompleted += (s, e) =>

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Celery.Utils
 {
@@ -164,7 +166,6 @@ namespace Celery.Utils
                 IList list = (IList)Activator.CreateInstance(listType);
                 foreach (string val in BreakDown(value))
                 {
-                    Console.WriteLine(ParseValue(valueType, val) + " " + valueType);
                     listType.GetMethod("Add").Invoke(list, new object[] { ParseValue(valueType, val) });
                 }
                 return list;
@@ -177,10 +178,9 @@ namespace Celery.Utils
                 Type valueType = type.GetGenericArguments()[1];
                 Type dictType = typeof(Dictionary<,>).MakeGenericType(typeof(string), valueType);
                 IDictionary dict = (IDictionary)Activator.CreateInstance(dictType);
-                for (int i = 0; i < values.Count; i += 2) dictType.GetMethod("Add").Invoke(dict, new object[] { (string)ParseValue(typeof(string), values[i]), ParseValue(valueType, values[i + 1]) });
+                for (int i = 0; i < values.Count; i += 2) dictType.GetMethod("Add").Invoke(dict, new object[] { (string)ParseValue(typeof(string), values[i]), ParseUnkownValue(values[i + 1]) });
                 return dict;
             }
-            else if (type == typeof(object)) return ParseUnkownValue(value);
             else if (value[0] == '{' && value[value.Length - 1] == '}') return ParseObject(type, value);
             return null;
         }
@@ -253,20 +253,52 @@ namespace Celery.Utils
             return s;
         }
 
+        private static Dictionary<string, T> CreateMemberNameDictionary<T>(T[] members) where T : MemberInfo
+        {
+            Dictionary<string, T> nameToMember = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < members.Length; i++)
+            {
+                T member = members[i];
+                if (member.IsDefined(typeof(IgnoreDataMemberAttribute), true))
+                    continue;
+
+                string name = member.Name;
+                if (member.IsDefined(typeof(DataMemberAttribute), true))
+                {
+                    DataMemberAttribute dataMemberAttribute = (DataMemberAttribute)Attribute.GetCustomAttribute(member, typeof(DataMemberAttribute), true);
+                    if (!string.IsNullOrEmpty(dataMemberAttribute.Name))
+                        name = dataMemberAttribute.Name;
+                }
+
+                nameToMember.Add(name, member);
+            }
+
+            return nameToMember;
+        }
+
         private static object ParseObject(Type type, string json)
         {
-            object instance = Activator.CreateInstance(type);
-            foreach (KeyValuePair<string, object> pair in (Dictionary<string, object>)ParseUnkownValue(json))
+            object instance = FormatterServices.GetUninitializedObject(type);
+
+            Dictionary<string, FieldInfo> fields = CreateMemberNameDictionary(type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy));
+            Dictionary<string, PropertyInfo> properties = CreateMemberNameDictionary(type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy));
+
+            List<string> values = BreakDown(json);
+            if (values.Count % 2 != 0)
+                return instance;
+
+            for (int i = 0; i < values.Count; i += 2)
             {
-                try
-                {
-                    type.GetProperty(pair.Key).SetValue(instance, pair.Value);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw ex;
-                }
+                if (values[i].Length <= 2)
+                    continue;
+
+                string key = values[i].Substring(1, values[i].Length - 2);
+                string value = values[i + 1];
+
+                if (fields.TryGetValue(key, out FieldInfo fieldInfo)) fieldInfo.SetValue(instance, ParseValue(fieldInfo.FieldType, value));
+                else if (properties.TryGetValue(key, out PropertyInfo propertyInfo)) propertyInfo.SetValue(instance, ParseValue(propertyInfo.PropertyType, value), null);
             }
+
             return instance;
         }
     }

@@ -18,17 +18,17 @@ namespace Celery.Settings
         public T GetValue<T>(T defaultValue)
         {
             T returnValue;
-            if (SaveManager.Instance == null)
+            if (SettingsSaveManager.Instance == null)
             {
                 returnValue = defaultValue;
             }
             else
             {
-                returnValue = SaveManager.Instance.Load(Identifier, defaultValue);
+                returnValue = SettingsSaveManager.Instance.Load(Identifier, defaultValue);
             }
 
-            if (SaveManager.Instance != null && returnValue != null)
-                SaveManager.Instance.Save(Identifier, returnValue);
+            if (SettingsSaveManager.Instance != null && returnValue != null)
+                SettingsSaveManager.Instance.Save(Identifier, returnValue);
 
             return returnValue;
         }
@@ -39,7 +39,7 @@ namespace Celery.Settings
             grid.Children.Add(new TextBlock
             {
                 Text = Name,
-                Foreground = new SolidColorBrush(Color.FromRgb(224, 235, 230)),
+                Foreground = (SolidColorBrush)Application.Current.Resources["ForegroundBrush"],
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(7,5,5,5),
                 FontSize = 13

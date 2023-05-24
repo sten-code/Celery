@@ -72,20 +72,20 @@ namespace Celery.Settings
                 if (OnChangeEvent != null)
                     OnChangeEvent(Value);
 
-                if (SaveManager.Instance != null)
-                    SaveManager.Instance.Save(Identifier, Value);
+                if (SettingsSaveManager.Instance != null)
+                    SettingsSaveManager.Instance.Save(Identifier, Value);
             };
             Button = new Button
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(5),
-                Background = new SolidColorBrush(Color.FromRgb(25, 32, 33)),
+                Background = (SolidColorBrush)Application.Current.Resources["BackgroundBrush"],
                 BorderThickness = new Thickness(1),
                 Content = new Path
                 {
                     Data = Geometry.Parse("M7 16H6C4.89543 16 4 15.1046 4 14V7C4 5.89543 4.89543 5 6 5H18C19.1046 5 20 5.89543 20 7V14C20 15.1046 19.1046 16 18 16H17M12 20V9M12 9L15 12M12 9L9 12"),
-                    Stroke = new SolidColorBrush(Color.FromRgb(224, 235, 230)),
+                    Stroke = (SolidColorBrush)Application.Current.Resources["ForegroundBrush"],
                     StrokeThickness = 1.5,
                     StrokeEndLineCap = PenLineCap.Round,
                     StrokeStartLineCap = PenLineCap.Round,

@@ -6,13 +6,13 @@ using System.IO;
 
 namespace Celery.Settings
 {
-    public class SaveManager
+    public class SettingsSaveManager
     {
         public string FileName { get; set; }
         public Dictionary<string, object> SaveFile { get; set; }
-        public static SaveManager Instance { get; set; }
+        public static SettingsSaveManager Instance { get; set; }
 
-        public SaveManager(string fileName)
+        public SettingsSaveManager(string fileName)
         {
             FileName = fileName;
             Instance = this;

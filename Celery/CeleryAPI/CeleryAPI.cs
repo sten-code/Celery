@@ -5,6 +5,7 @@ using Celery.Utils;
 using System.Windows.Threading;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Celery.CeleryAPI
 {
@@ -40,14 +41,12 @@ namespace Celery.CeleryAPI
                     // It may miss a few outputs, so it's not meant for
                     // high-speed printing or accurate debugging.
                     // It's just for viewing prints/warns/errors here and there
-                    int type = pinfo.readInt32(functionPtr + 0x20);
-                    int length = pinfo.readInt32(functionPtr + 0x28);
+                    var type = pinfo.readInt32(functionPtr + 0x20);
+                    var length = pinfo.readInt32(functionPtr + 0x28);
                     if (type == 1 || type == 2 || type == 3 || type == 4) // output type that was sent
                     {
-                        int ptr = pinfo.readInt32(functionPtr + 0x24);
-                        string str = pinfo.readString(ptr, length);
-
-                        //AddOutput(str, (OutputType)(type - 1));
+                        var ptr = pinfo.readInt32(functionPtr + 0x24);
+                        var str = pinfo.readString(ptr, length);
 
                         //var oldProtect2 = pinfo.setPageProtect(functionPtr, 0x40, Imports.PAGE_READWRITE);
                         pinfo.writeInt32(functionPtr + 0x20, 0);
@@ -60,47 +59,61 @@ namespace Celery.CeleryAPI
                      Well it works, until I bypass the security checks for
                      windows10universal.
                      */
-                    int mouseDataStart = functionPtr + (10 * sizeof(int));
-                    int mouseTransmitType = pinfo.readInt32(mouseDataStart);
-                    switch (mouseTransmitType)
+                    var mouseDataStart = functionPtr + (10 * sizeof(int));
+                    var mouseTransmitType = pinfo.readInt32(mouseDataStart);
+                    if (mouseTransmitType == 1)
                     {
-                        case 1:
-                            MouseOperations.doMouse1Down();
-                            break;
-                        case 2:
-                            MouseOperations.doMouse1Up();
-                            break;
-                        case 3:
-                            MouseOperations.doMouse1Click();
-                            break;
-                        case 4:
-                            MouseOperations.doMouse2Down();
-                            break;
-                        case 5:
-                            MouseOperations.doMouse2Up();
-                            break;
-                        case 6:
-                            MouseOperations.doMouse2Click();
-                            break;
-                        case 7:
-                            MouseOperations.mouseMoveRel(pinfo.readInt32(mouseDataStart + 4), pinfo.readInt32(mouseDataStart + 8));
-                            break;
-                        case 8:
-                            MouseOperations.mouseMoveAbs(pinfo.readInt32(mouseDataStart + 4), pinfo.readInt32(mouseDataStart + 8));
-                            break;
-                        case 9:
-                            KeyOperations.pressKey(pinfo.readUInt32(mouseDataStart + 4));
-                            break;
-                        case 10:
-                            KeyOperations.releaseKey(pinfo.readUInt32(mouseDataStart + 4));
-                            break;
+                        MouseOperations.doMouse1Down();
+                        pinfo.writeUInt32(mouseDataStart, 0);
                     }
-                    pinfo.writeUInt32(mouseDataStart, 0);
+                    else if (mouseTransmitType == 2)
+                    {
+                        MouseOperations.doMouse1Up();
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 3)
+                    {
+                        MouseOperations.doMouse1Click();
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 4)
+                    {
+                        MouseOperations.doMouse2Down();
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 5)
+                    {
+                        MouseOperations.doMouse2Up();
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 6)
+                    {
+                        MouseOperations.doMouse2Click();
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 7)
+                    {
+                        MouseOperations.mouseMoveRel(pinfo.readInt32(mouseDataStart + 4), pinfo.readInt32(mouseDataStart + 8));
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 8)
+                    {
+                        MouseOperations.mouseMoveAbs(pinfo.readInt32(mouseDataStart + 4), pinfo.readInt32(mouseDataStart + 8));
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 9) // pressKey
+                    {
+                        KeyOperations.pressKey(pinfo.readUInt32(mouseDataStart + 4));
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
+                    else if (mouseTransmitType == 10) // releaseKey
+                    {
+                        KeyOperations.releaseKey(pinfo.readUInt32(mouseDataStart + 4));
+                        pinfo.writeUInt32(mouseDataStart, 0);
+                    }
 
-
-                    int dataStart = functionPtr + (15 * sizeof(int));
-                    int transmitType = pinfo.readInt32(dataStart);
-
+                    var dataStart = functionPtr + (15 * sizeof(int));
+                    var transmitType = pinfo.readInt32(dataStart);
                     if (transmitType == 1) // PRINT_CONSOLE (string data)
                     {
                         int printSize = pinfo.readInt32(dataStart + 4);
@@ -128,9 +141,12 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
+                            Logger.Log($"Reading file (Path: {filePath})", true);
+
                             if (File.Exists(filePath))
                             {
                                 string contents = File.ReadAllText(filePath);
+                                Logger.Log($"File Content: {contents}", true);
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, contents.Length + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
                                 pinfo.writeString(contentsPointer, contents);
                                 pinfo.writeInt32(dataStart + 12, contents.Length);
@@ -138,6 +154,7 @@ namespace Celery.CeleryAPI
                             }
                             else
                             {
+                                Logger.Log($"Reading failed, file doesn't exist (Path: {filePath})", true);
                                 pinfo.writeInt32(dataStart + 12, 0);
                                 pinfo.writeInt32(dataStart + 16, 0);
                             }
@@ -150,11 +167,12 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Reading file (Path: {filePath})");
+                            Logger.Log($"Reading file (Path: {filePath})", true);
 
                             if (File.Exists(filePath))
                             {
                                 string contents = File.ReadAllText(filePath);
+                                Logger.Log($"File Content: {contents}", true);
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
 
                                 pinfo.writeWString(contentsPointer, contents);
@@ -163,6 +181,7 @@ namespace Celery.CeleryAPI
                             }
                             else
                             {
+                                Logger.Log($"Reading failed, file doesn't exist (Path: {filePath})", true);
                                 pinfo.writeInt32(dataStart + 12, 0);
                                 pinfo.writeInt32(dataStart + 16, 0);
                             }
@@ -177,14 +196,20 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize >= 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Writing to file (Path: {filePath}");
+                            Logger.Log($"Writing to file (Path: {filePath})", true);
 
                             byte[] data = pinfo.readBytes(dataPointer, dataSize);
-                            //var data = pinfo.readString(dataPointer, dataSize);
-                            //Logger.Log(data);
+                            Logger.Log(pinfo.readString(dataPointer, dataSize), true);
 
                             FileUtils.checkCreateFile(filePath);
-                            try { File.WriteAllBytes(filePath, data); } catch { }
+                            try 
+                            { 
+                                File.WriteAllBytes(filePath, data); 
+                            } 
+                            catch (Exception ex)
+                            { 
+                                Logger.Log(ex.Message, true);
+                            }
                         }
                     }
                     else if (transmitType == 6) // WRITE_FILEW (wstring filePath, wstring data)
@@ -196,14 +221,20 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize >= 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Writing to file (Path: {filePath})");
+                            Logger.Log($"Writing to file (Path: {filePath})", true);
 
                             byte[] data = pinfo.readBytes(dataPointer, dataSize * 2);
-                            //var data = pinfo.readWString(dataPointer, dataSize);
-                            //Logger.Log(data);
+                            Logger.Log(pinfo.readWString(dataPointer, dataSize), true);
 
                             FileUtils.checkCreateFile(filePath);
-                            try { File.WriteAllBytes(filePath, data); } catch { }
+                            try 
+                            { 
+                                File.WriteAllBytes(filePath, data); 
+                            } 
+                            catch (Exception ex)
+                            {
+                                Logger.Log(ex.Message, true);
+                            }
                         }
                     }
                     else if (transmitType == 7) // sendMessageBox (string)
@@ -235,14 +266,20 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Appending to file (Path: {filePath})");
+                            Logger.Log($"Appending to file (Path: {filePath})", true);
 
                             string data = pinfo.readString(dataPointer, dataSize);
-                            //var data = pinfo.readString(dataPointer, dataSize);
-                            //Logger.Log(data);
+                            Logger.Log(pinfo.readString(dataPointer, dataSize), true);
 
                             FileUtils.checkCreateFile(filePath);
-                            try { File.AppendAllText(filePath, data); } catch { }
+                            try 
+                            { 
+                                File.AppendAllText(filePath, data);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Log(ex.Message, true);
+                            }
                         }
                     }
                     else if (transmitType == 10) // APPEND_FILEW (wstring filePath, wstring data)
@@ -254,18 +291,24 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0 && dataSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Appending to file (Path: {filePath}");
+                            Logger.Log($"Appending to file (Path: {filePath}", true);
 
                             byte[] bytes = pinfo.readBytes(dataPointer, dataSize * 2);
-                            //var data = pinfo.readWString(dataPointer, dataSize);
-                            //Logger.Log(data);
+                            Logger.Log(pinfo.readWString(dataPointer, dataSize), true);
 
                             string data = "";
                             foreach (byte b in bytes)
                                 data += (char)b;
 
                             FileUtils.checkCreateFile(filePath);
-                            try { File.AppendAllText(filePath, data); } catch { }
+                            try
+                            {
+                                File.AppendAllText(filePath, data); 
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Log(ex.Message, true);
+                            }
                         }
                     }
                     else if (transmitType == 11) // CREATE_DIRECTORY (wstring filePath, wstring data)
@@ -275,9 +318,16 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Creating folder (Path: {filePath})");
+                            Logger.Log($"Creating directory (Path: {filePath})", true);
 
-                            try { Directory.CreateDirectory(filePath); } catch { }
+                            try 
+                            { 
+                                Directory.CreateDirectory(filePath);
+                            } 
+                            catch (Exception ex)
+                            {
+                                Logger.Log(ex.Message, true);
+                            }
                         }
                     }
                     else if (transmitType == 12) // DELFILE (wstring filePath)
@@ -287,10 +337,22 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Deleting file (Path: {filePath})");
+                            Logger.Log($"Deleting file (Path: {filePath})", true);
 
-                            if (File.Exists(filePath))
-                                try { File.Delete(filePath); } catch { }
+                            if (File.Exists(filePath)) 
+                            { 
+                                try 
+                                { 
+                                    File.Delete(filePath); 
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Log(ex.Message, true);
+                                }
+                            } else
+                            {
+                                Logger.Log($"Deleting failed, file doesn't exist (Path: {filePath})", true);
+                            }
                         }
                     }
                     else if (transmitType == 13) // DELFOLDER (wstring filePath)
@@ -300,10 +362,22 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string filePath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Deleting folder (Path: {filePath})");
+                            Logger.Log($"Deleting folder (Path: {filePath})", true);
 
                             if (Directory.Exists(filePath))
-                                try { Directory.Delete(filePath); } catch { }
+                            {
+                                try 
+                                { 
+                                    Directory.Delete(filePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Log(ex.Message, true);
+                                }
+                            } else
+                            {
+                                Logger.Log($"Deleting directory failed, directory doesn't exist (Path: {filePath})", true);
+                            }
                         }
                     }
                     else if (transmitType == 14) // LISTFILES (wstring filePath)
@@ -313,7 +387,7 @@ namespace Celery.CeleryAPI
                         if (filePathSize > 0)
                         {
                             string dirPath = pinfo.readWString(filePathPointer, filePathSize);
-                            Logger.Log($"Listing files (Path: {dirPath})");
+                            Logger.Log($"Listing files (Path: {dirPath})", true);
 
                             if (Directory.Exists(dirPath))
                             {
@@ -328,7 +402,7 @@ namespace Celery.CeleryAPI
                                     }
                                 }
                                 contents.TrimEnd('|');
-
+                                Logger.Log($"File list: {contents}", true);
                                 int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
                                 pinfo.writeWString(contentsPointer, contents);
                                 pinfo.writeInt32(dataStart + 12, contents.Length);
@@ -336,6 +410,7 @@ namespace Celery.CeleryAPI
                             }
                             else
                             {
+                                Logger.Log($"Listing files failed, directory doesn't exist (Path: {dirPath})", true);
                                 pinfo.writeInt32(dataStart + 12, 0);
                                 pinfo.writeInt32(dataStart + 16, 0);
                             }
@@ -363,22 +438,24 @@ namespace Celery.CeleryAPI
                     }
                     else if (transmitType == 17) // setclipboard (wstring data)
                     {
-                        int printSize = pinfo.readInt32(dataStart + 4);
-                        int printPointer = pinfo.readInt32(dataStart + 8);
-                        if (printSize > 0)
+                        var dataSize = pinfo.readInt32(dataStart + 4);
+                        var dataPointer = pinfo.readInt32(dataStart + 8);
+                        if (dataSize > 0)
                         {
-                            string str = pinfo.readWString(printPointer, printSize);
-                            Logger.Log($"Setting clipboard (Data: {str})");
+                            var data = pinfo.readBytes(dataPointer, dataSize);
+                            string str = Encoding.UTF8.GetString(data);
+                            Logger.Log($"Setting clipboard (Data: {str})", true);
                             Clipboard.SetText(str);
                         }
                     }
                     else if (transmitType == 18) // wstring getclipboard
                     {
-                        string contents = Clipboard.GetText();
-                        Logger.Log($"Reading clipboard (Data: {contents})");
+                        string clipboard = Clipboard.GetText();
+                        Logger.Log($"Reading clipboard (Data: {clipboard})", true);
+                        var contents = Encoding.UTF8.GetBytes(clipboard);
+                        var contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
 
-                        int contentsPointer = Imports.VirtualAllocEx(pinfo.handle, 0, (contents.Length * 2) + 4, Imports.MEM_COMMIT | Imports.MEM_RESERVE, Imports.PAGE_READWRITE);
-                        pinfo.writeWString(contentsPointer, contents);
+                        pinfo.writeBytes(contentsPointer, contents);
                         pinfo.writeInt32(dataStart + 4, contents.Length);
                         pinfo.writeInt32(dataStart + 8, contentsPointer);
                     }
@@ -402,7 +479,7 @@ namespace Celery.CeleryAPI
             if (procs.Count <= 0)
             {
                 if (notify)
-                    Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
+                    Logger.Log("Roblox isn't opened, make sure you using the Roblox version from the Microsoft Store.");
                 return;
             }
 
@@ -444,7 +521,7 @@ namespace Celery.CeleryAPI
             List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
             if (procs.Count <= 0)
             {
-                Logger.Log("Roblox isn't openend, make sure you using the Roblox version from the Microsoft Store.");
+                Logger.Log("Roblox isn't opened, make sure you using the Roblox version from the Microsoft Store.");
                 return;
             }
 
@@ -460,6 +537,7 @@ namespace Celery.CeleryAPI
             {
                 Injector.SendScript(pinfo, script);
             }
+            Logger.Log($"Executed successfully!");
         }
 
         public bool IsInjected()

@@ -17,7 +17,7 @@ namespace Celery.Settings
             {
                 Margin = new Thickness(10, 10, 10, -5),
                 BorderThickness = new Thickness(1),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(64, 84, 89)),
+                BorderBrush = (SolidColorBrush)Application.Current.Resources["BorderBrush"],
                 CornerRadius = new CornerRadius(4)
             };
 

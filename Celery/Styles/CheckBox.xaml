@@ -4,7 +4,7 @@
         <Setter Property="SnapsToDevicePixels" Value="False" />
         <Setter Property="OverridesDefaultStyle" Value="true" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -12,7 +12,7 @@
                         <BulletDecorator.Bullet>
                             <Border x:Name="Border"
                                     Width="20" Height="20"
-                                    Background="{StaticResource BackgroundBrush}"
+                                    Background="{DynamicResource BackgroundBrush}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="4">
@@ -21,7 +21,7 @@
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M6 12L10.2426 16.2426L18.727 7.75732"
                                       Stretch="Uniform"
-                                      Stroke="{StaticResource ForegroundBrush}"
+                                      Stroke="{DynamicResource ForegroundBrush}"
                                       StrokeEndLineCap="Round"
                                       StrokeStartLineCap="Round"
                                       StrokeThickness="2" />

@@ -13,19 +13,19 @@
                             UseAeroCaptionButtons="False"
                             ResizeBorderThickness="0"/>
     </shell:WindowChrome.WindowChrome>
-    <Border x:Name="Border" Background="{StaticResource LightBackgroundBrush}" CornerRadius="7">
+    <Border x:Name="Border" Background="{DynamicResource LightBackgroundBrush}" CornerRadius="7">
         <Grid>
             <Path x:Name="CeleryLogo"
                   Width="150" Height="150"
                   HorizontalAlignment="Left" VerticalAlignment="Center"
                   Margin="60,0,0,0"
-                  Stretch="Uniform" Fill="{StaticResource DarkForegroundBrush}" 
+                  Stretch="Uniform" Fill="{DynamicResource LogoBrush}" 
                   Data="{StaticResource CeleryLogo}"/>
-            <TextBlock x:Name="WelcomeLabel" Text="Welcome to" Foreground="{StaticResource ForegroundBrush}" FontSize="25" 
+            <TextBlock x:Name="WelcomeLabel" Text="Welcome to" Foreground="{DynamicResource ForegroundBrush}" FontSize="25" 
                        HorizontalAlignment="Right" VerticalAlignment="Top"
                        Margin="0,80,60,0" FontWeight="Light"/>
 
-            <TextBlock x:Name="CeleryLabel" Text="Celery" Foreground="{StaticResource DarkForegroundBrush}" FontSize="25" 
+            <TextBlock x:Name="CeleryLabel" Text="Celery" Foreground="{DynamicResource LogoBrush}" FontSize="25" 
                        HorizontalAlignment="Right" VerticalAlignment="Top"
                        Margin="0,120,50,0" FontWeight="Medium"/>
         </Grid>

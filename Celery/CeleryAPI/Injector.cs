@@ -175,11 +175,10 @@ namespace Celery.CeleryAPI
                 }
             }
 
-            Console.WriteLine("Manual mapping...");
+            Logger.Log("Manual mapping...", true);
             //pinfo.writeUInt32(functionPtr + (13 * sizeof(int)), homePathPointer);
             //pinfo.writeInt32(functionPtr + (14 * sizeof(int)), homePathSize);
             //pinfo.setPageProtect(functionPtr, 0x20, oldProtect);
-
 
             bool mapResult = MapInject.ManualMap(pinfo.processRef, AppDomain.CurrentDomain.BaseDirectory + "dll/" + InjectFileName);
             if (mapResult)
@@ -189,6 +188,7 @@ namespace Celery.CeleryAPI
                     Thread.Sleep(10);
                 }
 
+                Logger.Log("Manual mapping done", true);
                 // Easier access to processes injected, for when we run scripts and etc.
                 postInjectedPlayer.Add(pinfo);
 
