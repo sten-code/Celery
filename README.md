@@ -83,6 +83,7 @@ The delay between each save of the tabs.
 ```
 - You can adjust the hex values that start with #, you can use a color picker, google has one built in which you can open by searching for `color picker` through google search.
   - Make sure the length of the hex value is 6 long, if its 8 it means there is an extra channel for the alpha value. This is for transparency which isn't supported by Celery and will result in weird outcomes. You need to remove the first 2 characters to make it 6 long again. (For example: `#FF202020` becomes `#202020`)
+- After all that is done, restart Celery, go to settings and change the theme.
 
 <h1 align="center">API Documentation</h1>
 
