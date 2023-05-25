@@ -382,8 +382,10 @@ namespace Celery
 
         private async void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
+            Logger.Log("Getting script from editor...", true);
             Editor editor = (Editor)Tabs.SelectedContent;
             string script = await editor.GetText();
+            Logger.Log("Script obtained.", true);
             Celery.Execute(script);
         }
 
