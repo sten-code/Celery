@@ -71,31 +71,42 @@
                                  Background="{DynamicResource BackgroundBrush}" 
                                  Margin="6,25,6,6"
                                  IsReadOnly="True"
+                                 TextWrapping="WrapWithOverflow"
                                  VerticalScrollBarVisibility="Hidden" />
                     </Grid>
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="{DynamicResource LightBackgroundBrush}">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Width="40" Background="{DynamicResource LightBackgroundBrush}"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True"
-                                    Click="MinimizeButton_Click" Style="{DynamicResource SquareButton}">
-                                <Path Stroke="{DynamicResource ForegroundBrush}"
-                                      Stretch="Uniform" StrokeThickness="1.15"
-                                      Width="11"
-                                      Data="M2,2 l1,0"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Button>
-                            <Button Width="40" Background="{DynamicResource LightBackgroundBrush}"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True"
-                                    Click="ExitButton_Click" Style="{DynamicResource SquareButton}">
-                                <Path Stroke="{DynamicResource ForegroundBrush}"
-                                      Stretch="Uniform"
-                                      Width="11"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"
-                                      Data="M21 21L12 12M12 12L3 3M12 12L21.0001 3M12 12L3 21.0001"/>
-                            </Button>
-                        </StackPanel>
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <Path Data="{StaticResource CeleryLogo}" 
+                                      Stretch="Uniform" Fill="{DynamicResource LogoBrush}"
+                                      Margin="5"/>
+                                <TextBlock x:Name="TitleBox" Text="Celery v" VerticalAlignment="Center"
+                                           FontSize="14" Margin="5"
+                                           Foreground="{DynamicResource ForegroundBrush}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Width="40" Background="{DynamicResource LightBackgroundBrush}"
+                                        shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                        Click="MinimizeButton_Click" Style="{DynamicResource SquareButton}">
+                                    <Path Stroke="{DynamicResource ForegroundBrush}"
+                                          Stretch="Uniform" StrokeThickness="1.15"
+                                          Width="11"
+                                          Data="M2,2 l1,0"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"/>
+                                </Button>
+                                <Button Width="40" Background="{DynamicResource LightBackgroundBrush}"
+                                        shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                        Click="ExitButton_Click" Style="{DynamicResource SquareButton}">
+                                    <Path Stroke="{DynamicResource ForegroundBrush}"
+                                          Stretch="Uniform"
+                                          Width="11"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          Data="M21 21L12 12M12 12L3 3M12 12L21.0001 3M12 12L3 21.0001"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="{DynamicResource BorderBrush}"/>
                     <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Background="{DynamicResource LightBackgroundBrush}">

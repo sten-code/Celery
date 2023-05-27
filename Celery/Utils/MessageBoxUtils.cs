@@ -1,5 +1,6 @@
 ﻿using Celery.Controls;
 using Microsoft.Web.WebView2.Wpf;
+using System;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -9,19 +10,14 @@ namespace Celery.Utils
 {
     public static class MessageBoxUtils
     {
-        public static Grid BlurGrid { get; set; }
-        public static Grid BaseGrid { get; set; }
-        public static Tabs Tabs { get; set; }
-
         public static async Task<MessageBoxResult> ShowMessage(string title, string content, bool closeButton, MessageBoxButtons buttons)
         {
-            BlurGrid.Effect = new BlurEffect
+            App.Instance.BlurGrid.Effect = new BlurEffect
             {
                 Radius = 10,
                 KernelType = KernelType.Gaussian
             };
-            WebView2 toDisable = (WebView2)Tabs.SelectedContent;
-
+            WebView2 toDisable = (WebView2)App.Instance.Tabs.SelectedContent;
             if (toDisable != null)
                 toDisable.Visibility = System.Windows.Visibility.Hidden;
             MessageBox box = new MessageBox(title, content, closeButton, false);
@@ -54,14 +50,14 @@ namespace Celery.Utils
             box.MessageBoxClosing += (s, e) =>
             {
                 result = e.Result;
-                BlurGrid.Effect = null;
-                BaseGrid.Children.Remove(box);
-                BaseGrid.Children.Remove(border);
+                App.Instance.BlurGrid.Effect = null;
+                App.Instance.BaseGrid.Children.Remove(box);
+                App.Instance.BaseGrid.Children.Remove(border);
                 if (toDisable != null)
                     toDisable.Visibility = System.Windows.Visibility.Visible;
             };
-            BaseGrid.Children.Add(border);
-            BaseGrid.Children.Add(box);
+            App.Instance.BaseGrid.Children.Add(border);
+            App.Instance.BaseGrid.Children.Add(box);
             while (result == MessageBoxResult.None) 
                 await Task.Delay(10);
             return result;
@@ -69,12 +65,12 @@ namespace Celery.Utils
 
         public static async Task<(string, MessageBoxResult)> ShowInputBox(string title, string content, bool closeButton, string defaultInput = "")
         {
-            BlurGrid.Effect = new BlurEffect
+            App.Instance.BlurGrid.Effect = new BlurEffect
             {
                 Radius = 10,
                 KernelType = KernelType.Gaussian
             };
-            WebView2 toDisable = (WebView2)Tabs.SelectedContent;
+            WebView2 toDisable = (WebView2)App.Instance.Tabs.SelectedContent;
             if (toDisable != null)
                 toDisable.Visibility = System.Windows.Visibility.Hidden;
 
@@ -95,15 +91,15 @@ namespace Celery.Utils
             {
                 result = e.Result;
                 input = box.InputBox.Text;
-                BlurGrid.Effect = null;
-                BaseGrid.Children.Remove(box);
-                BaseGrid.Children.Remove(border);
+                App.Instance.BlurGrid.Effect = null;
+                App.Instance.BaseGrid.Children.Remove(box);
+                App.Instance.BaseGrid.Children.Remove(border);
                 if (toDisable != null)
                     toDisable.Visibility = System.Windows.Visibility.Visible;
             };
 
-            BaseGrid.Children.Add(border);
-            BaseGrid.Children.Add(box);
+            App.Instance.BaseGrid.Children.Add(border);
+            App.Instance.BaseGrid.Children.Add(box);
             while (result == MessageBoxResult.None)
                 await Task.Delay(10);
             return (input, result);

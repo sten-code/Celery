@@ -6,7 +6,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,7 +25,6 @@ namespace Celery
     public partial class MainWindow : Window
     {
         public CeleryAPI.CeleryAPI Celery;
-        public WebClient WebClient;
         public bool StartupAnimation;
 
         private bool _saveTabs = true;
@@ -38,26 +36,23 @@ namespace Celery
         public MainWindow()
         {
             InitializeComponent();
-            WebClient = new WebClient();
-            WebClient.Headers["User-Agent"] = "Celery WebClient";
-            Tabs.GetContent = Tabs_GetContent;
+            Tabs.GetContent = (string text) =>
+            {
+                return new AceEditor(text);
+            };
 
-            MessageBoxUtils.BaseGrid = BaseGrid;
-            MessageBoxUtils.BlurGrid = BlurGrid;
-            MessageBoxUtils.Tabs = Tabs;
-
-            if (!Directory.Exists(Config.SettingsPath))
-                Directory.CreateDirectory(Config.SettingsPath);
+            // Create all files and folders required
+            if (!Directory.Exists(Config.CeleryAppDataPath))
+                Directory.CreateDirectory(Config.CeleryAppDataPath);
             if (!Directory.Exists(Config.ScriptsPath)) 
                 Directory.CreateDirectory(Config.ScriptsPath);
             if (!Directory.Exists(Config.ThemesPath))
                 Directory.CreateDirectory(Config.ThemesPath);
-
+            new SettingsSaveManager(Config.SettingsFilePath);
             ExtractZipFromResources("Ace", Properties.Resources.Ace, "\\bin");
             ExtractZipFromResources("dll", Properties.Resources.dll, "");
 
-            new SettingsSaveManager(Config.SettingsFilePath);
-
+            // Get all themes from the themes folder
             Themes = new Dictionary<string, ResourceDictionary>();
             ResourceDictionary defaultTheme = Application.Current.Resources.MergedDictionaries[0];
             Themes.Add("Default", defaultTheme);
@@ -74,14 +69,18 @@ namespace Celery
                 }
             }
 
-            DispatcherTimer saveTimer = new DispatcherTimer();
+            // Initiate the save timer
+            DispatcherTimer saveTimer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 1, 0, 0)
+            };
             saveTimer.Tick += async (s, e) =>
             {
                 if (_saveTabs)
                     await SaveTabs();
             };
-            saveTimer.Interval = new TimeSpan(0, 0, 1, 0, 0);
 
+            // Create all settings
             SettingsMenu.AddSettings(
                 new BooleanSetting("Topmost", "topmost", false, onChange: (value) =>
                 {
@@ -155,13 +154,16 @@ namespace Celery
                 })
             );
 
-            if (_saveTabs)
-                LoadTabs();
-            else
-                Tabs.MakeTab();
+            if (_saveTabs) LoadTabs();
+            else Tabs.MakeTab();
+
+            // Start the save timer after creating the settings and loading tabs in order to not save tabs while the user might not want to save their tabs
             saveTimer.Start();
 
-            DispatcherTimer autoAttachTimer = new DispatcherTimer();
+            DispatcherTimer autoAttachTimer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 3000)
+            };
             autoAttachTimer.Tick += (s, e) =>
             {
                 if (_autoAttach)
@@ -169,13 +171,12 @@ namespace Celery
                     Celery.Inject(false);
                 }
             };
-            autoAttachTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
             autoAttachTimer.Start();
 
             CreateFileWatcher();
             Celery = new CeleryAPI.CeleryAPI();
 
-            CheckUpdates();
+            TitleBox.Text += Config.Version;
         }
 
         public async Task SaveTabs()
@@ -211,7 +212,7 @@ namespace Celery
             }
         }
 
-        public void ExtractZipFromResources(string name, byte[] resource, string path)
+        public async void ExtractZipFromResources(string name, byte[] resource, string path)
         {
             if (!Directory.Exists(Config.ApplicationPath + path + "\\" + name))
             {
@@ -224,7 +225,7 @@ namespace Celery
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(ex.Message);
+                    await MessageBoxUtils.ShowMessage("Error", $"Couldn't extract {name} to {path}, Error: {ex.Message}", true, MessageBoxButtons.Ok);
                 }
             }
         }
@@ -232,14 +233,11 @@ namespace Celery
         public async void CheckUpdates()
         {
             Dictionary<string, object> latest;
-            Version currentVersion;
             Version latestVersion;
             try
             {
-                string json = WebClient.DownloadString("https://api.github.com/repos/sten-code/Celery/releases/latest");
+                string json = await App.HttpClient.GetStringAsync("https://api.github.com/repos/sten-code/Celery/releases/latest");
                 latest = json.FromJson<Dictionary<string, object>>();
-
-                currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
                 latestVersion = Version.Parse((string)latest["tag_name"]);
             }
             catch
@@ -248,7 +246,7 @@ namespace Celery
                 return;
             }
 
-            if (currentVersion.CompareTo(latestVersion) >= 0)
+            if (Config.Version.CompareTo(latestVersion) >= 0)
                 return;
 
             if (await MessageBoxUtils.ShowMessage("Update", "A new update was detected, do you want to update?", false, MessageBoxButtons.YesNo) == Utils.MessageBoxResult.No)
@@ -259,8 +257,8 @@ namespace Celery
                 List<Dictionary<string, object>> assets = (List<Dictionary<string, object>>)latest["assets"];
                 string downloadUrl = (string)assets[0]["browser_download_url"];
 
-                if (!Directory.Exists(Config.SettingsPath))
-                    Directory.CreateDirectory(Config.SettingsPath);
+                if (!Directory.Exists(Config.CeleryAppDataPath))
+                    Directory.CreateDirectory(Config.CeleryAppDataPath);
 
                 File.WriteAllBytes(Config.UpdaterPath, Properties.Resources.CeleryUpdater);
                 Process updater = new Process
@@ -350,7 +348,6 @@ namespace Celery
                 Dispatcher.Invoke(() =>
                 {
                     string itemRemove = Path.GetFileNameWithoutExtension(e.OldFullPath);
-                    Debug.WriteLine(itemRemove);
                     for (int i = ScriptList.Items.Count - 1; i >= 0; --i)
                     {
                         if (((ListBoxItem)ScriptList.Items[i]).Content.ToString() == itemRemove)
@@ -362,11 +359,6 @@ namespace Celery
                     ScriptList.Items.Refresh();
                 });
             };
-        }
-
-        public UIElement Tabs_GetContent(string text)
-        {
-            return new AceEditor(text);
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -495,8 +487,8 @@ namespace Celery
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            CheckUpdates();
             AnimationUtils.AnimateMargin(ScriptHub, ScriptHub.Margin, new Thickness(InsideGrid.ActualWidth, 0, 0, 0), AnimationUtils.EaseInOut, 0); // For some reason animations are just really weird, just don't change this
-
             ThreadPool.QueueUserWorkItem(new WaitCallback((o) =>
             {
                 List<int> openedProcs = new List<int>();

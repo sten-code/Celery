@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Celery.CeleryAPI
 {
@@ -467,8 +468,8 @@ namespace Celery.CeleryAPI
             updateTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             updateTimer.Start();
 
-            if (!Directory.Exists(Config.CeleryTemp))
-                Directory.CreateDirectory(Config.CeleryTemp);
+            if (!Directory.Exists(Config.CeleryTempPath))
+                Directory.CreateDirectory(Config.CeleryTempPath);
             File.WriteAllText(Config.CeleryDir, Config.ApplicationPath + "\\");
             File.WriteAllText(Config.CeleryHome, Path.Combine(Config.ApplicationPath, "dll") + "\\");
         }
@@ -478,9 +479,17 @@ namespace Celery.CeleryAPI
             List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
             if (procs.Count <= 0)
             {
-                if (notify)
-                    Logger.Log("Roblox isn't opened, make sure you using the Roblox version from the Microsoft Store.");
-                return;
+                if (!notify)
+                    return;
+
+                if (Process.GetProcessesByName("RobloxPlayerBeta").Length > 0)
+                {
+                    Logger.Log("You're using the web version of Roblox, Celery only works with the Roblox version from the Microsoft Store. Download Roblox from https://www.microsoft.com/store/productId/9NBLGGGZM6WM");
+                }
+                else
+                {
+                    Logger.Log("Roblox isn't opened.");
+                }
             }
 
             foreach (ProcInfo pinfo in procs)
