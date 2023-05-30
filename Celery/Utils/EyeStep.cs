@@ -236,7 +236,7 @@ namespace Celery.Utils
         public const byte R32_EDI = 7;
 
 
-        public class mnemonics
+        public class Mnemonics
         {
             public static string[] r8_names =
             {
@@ -383,9 +383,9 @@ namespace Celery.Utils
             }
         };
 
-        public class operand
+        public class Operand
         {
-            public operand()
+            public Operand()
             {
                 reg = new List<byte>();
                 rel8 = 0;
@@ -402,7 +402,7 @@ namespace Celery.Utils
                 flags = 0;
             }
 
-            ~operand()
+            ~Operand()
             {
             }
 
@@ -426,14 +426,14 @@ namespace Celery.Utils
             public ushort disp16;
             public uint disp32;
 
-            public byte append_reg(byte reg_type)
+            public byte Append_reg(byte reg_type)
             {
                 reg.Add(reg_type);
                 return reg_type;
             }
         };
 
-        public class inst
+        public class Inst
         {
             public string data;
             public OP_INFO info;
@@ -442,19 +442,19 @@ namespace Celery.Utils
             public int address;
             public byte[] bytes;
             public int len;
-            public List<operand> operands;
+            public List<Operand> operands;
 
-            public inst()
+            public Inst()
             {
                 bytes = new byte[16];
 
                 // operands should contain 4 blank operands by default
-                operands = new List<operand>
+                operands = new List<Operand>
                 {
-                    new operand(),
-                    new operand(),
-                    new operand(),
-                    new operand()
+                    new Operand(),
+                    new Operand(),
+                    new Operand(),
+                    new Operand()
                 };
 
                 address = 0;
@@ -462,45 +462,45 @@ namespace Celery.Utils
                 len = 0;
             }
 
-            ~inst()
+            ~Inst()
             {
                 operands.Clear();
             }
 
-            public operand src()
+            public Operand Src()
             {
-                if (operands.Count <= 0) return new operand();
+                if (operands.Count <= 0) return new Operand();
                 return operands[0];
             }
 
-            public operand dest()
+            public Operand Dest()
             {
-                if (operands.Count <= 1) return new operand();
+                if (operands.Count <= 1) return new Operand();
                 return operands[1];
             }
         };
 
-        public static int getm20(byte x)
+        public static int Getm20(byte x)
         {
             return x % 32;
         }
 
-        public static int getm40(byte x)
+        public static int Getm40(byte x)
         {
             return x % 64;
         }
 
-        public static int finalreg(byte x)
+        public static int Finalreg(byte x)
         {
             return (x % 64) % 8;
         }
 
-        public static int longreg(byte x)
+        public static int Longreg(byte x)
         {
             return (x % 64) / 8;
         }
 
-        public static void init()
+        public static void Init()
         {
             // The reason I say EyeStep offers extended portability (you probably
             // beg to differ by looking at this) is because this can all
@@ -1431,7 +1431,7 @@ namespace Celery.Utils
             };
         }
 
-        static byte to_byte(string str, int offset)
+        static byte ToByte(string str, int offset)
         {
             int n = 0;
 
@@ -1460,15 +1460,15 @@ namespace Celery.Utils
             return (byte)n;
         }
 
-        public static string to_str(byte b)
+        public static string ToStr(byte b)
         {
             string result = b.ToString("X2");
             return result;
         }
 
-        public static inst read(int handle, int address)
+        public static Inst Read(int handle, int address)
         {
-            inst p = new inst
+            Inst p = new Inst
             {
                 address = address
             };
@@ -1476,16 +1476,16 @@ namespace Celery.Utils
             int nothing = 0;
             Imports.ReadProcessMemory(handle, address, p.bytes, 16, ref nothing);
 
-            for (int opcode_at = 0; opcode_at < OP_TABLE.Length; opcode_at++)
+            for (int opcodeAt = 0; opcodeAt < OP_TABLE.Length; opcodeAt++)
             {
-                var op_info = OP_TABLE[opcode_at];
+                var opInfo = OP_TABLE[opcodeAt];
 
                 // Reset for each check..
                 p.flags = 0;
                 p.len = 0;
 
-                byte opcode_byte = to_byte(op_info.code, 0);
-                bool show_prefix = false;
+                byte opcodeByte = ToByte(opInfo.code, 0);
+                bool showPrefix = false;
 
                 // identify the instruction prefixes
                 switch (p.bytes[p.len])
@@ -1522,67 +1522,67 @@ namespace Celery.Utils
                         break;
                     case OP_LOCK:
                         p.flags |= PRE_LOCK;
-                        if (opcode_byte != OP_LOCK)
+                        if (opcodeByte != OP_LOCK)
                         {
-                            show_prefix = true;
+                            showPrefix = true;
                         }
                         break;
                     case OP_REPNE:
                         p.flags |= PRE_REPNE;
-                        if (opcode_byte != OP_REPNE)
+                        if (opcodeByte != OP_REPNE)
                         {
-                            show_prefix = true;
+                            showPrefix = true;
                         }
                         break;
                     case OP_REPE:
                         p.flags |= PRE_REPE;
-                        if (opcode_byte != OP_REPE)
+                        if (opcodeByte != OP_REPE)
                         {
-                            show_prefix = true;
+                            showPrefix = true;
                         }
                         break;
                 }
 
-                bool opcode_match = (p.bytes[p.len] == opcode_byte);
+                bool opcode_match = (p.bytes[p.len] == opcodeByte);
                 bool reg_from_opcode_byte = false;
 
                 // This will check if we've included up to
                 // 3 prefixes in the byte string
                 for (int i = 2; i < 11; i += 3)
                 {
-                    if (op_info.code.Length > i)
+                    if (opInfo.code.Length > i)
                     {
                         // extended byte?
-                        if (op_info.code[i] == '+')
+                        if (opInfo.code[i] == '+')
                         {
                             // check if the opcode byte determines the register
-                            if (op_info.code[i + 1] == 'r')
+                            if (opInfo.code[i + 1] == 'r')
                             {
                                 reg_from_opcode_byte = true;
 
                                 // this simple check can simplify instructons like inc/dec/push/pop
                                 // in our opcode table so it can do up to 8 combinations
                                 // All we have to put is put `40+r` (rather than 40, 41, 42, 43,...)
-                                opcode_match = (p.bytes[p.len] >= opcode_byte) && (p.bytes[p.len] < opcode_byte + 8);
+                                opcode_match = (p.bytes[p.len] >= opcodeByte) && (p.bytes[p.len] < opcodeByte + 8);
                                 break;
                             }
-                            else if (op_info.code[i + 1] == 'm' && opcode_match)
+                            else if (opInfo.code[i + 1] == 'm' && opcode_match)
                             {
                                 string str = "0";
-                                str += op_info.code[i + 2];
+                                str += opInfo.code[i + 2];
 
-                                byte n = to_byte(str, 0);
+                                byte n = ToByte(str, 0);
                                 if (n >= 0 && n < 8)
                                 {
                                     // for every +8 it switches to a different opcode out of 8
-                                    opcode_match = longreg(p.bytes[p.len + 1]) == n;
+                                    opcode_match = Longreg(p.bytes[p.len + 1]) == n;
                                 }
                                 else
                                 {
                                     // for every +8 it switches to a different opcode out of 8
                                     // IF the mode is 3 / the byte is >= 0xC0
                                     n -= 8;
-                                    opcode_match = longreg(p.bytes[p.len + 1]) == n && p.bytes[p.len + 1] >= 0xC0;
+                                    opcode_match = Longreg(p.bytes[p.len + 1]) == n && p.bytes[p.len + 1] >= 0xC0;
                                 }
                                 break;
                             }
@@ -1591,8 +1591,8 @@ namespace Celery.Utils
                                 // in all other cases, it's an extending byte
                                 p.len++;
 
-                                opcode_byte = to_byte(op_info.code, i + 1);
-                                opcode_match = (p.bytes[p.len] == opcode_byte);
+                                opcodeByte = ToByte(opInfo.code, i + 1);
+                                opcode_match = (p.bytes[p.len] == opcodeByte);
 
 
                             }
@@ -1610,7 +1610,7 @@ namespace Celery.Utils
                     // move onto the next byte
                     p.len++;
 
-                    if (show_prefix)
+                    if (showPrefix)
                     {
                         switch (p.flags)
                         {
@@ -1626,12 +1626,12 @@ namespace Celery.Utils
                         }
                     }
 
-                    p.data += op_info.opcode_name;
+                    p.data += opInfo.opcode_name;
                     p.data += " ";
 
-                    p.info = op_info;
+                    p.info = opInfo;
 
-                    int noperands = op_info.operands.Length;
+                    int noperands = opInfo.operands.Length;
 
                     switch (noperands)
                     {
@@ -1655,7 +1655,7 @@ namespace Celery.Utils
                     {
                         // c = current operand (index)
                         // append this opmode to that of the corresponding operand
-                        p.operands[c].opmode = op_info.operands[c];
+                        p.operands[c].opmode = opInfo.operands[c];
 
                         // Returns the imm8 offset value at `x`
                         // and then increases `at` by imm8 size.
@@ -1764,13 +1764,13 @@ namespace Celery.Utils
                             // 
 
                             byte sib_byte = p.bytes[++p.len]; // notice we skip to the next byte for this
-                            byte r1 = (byte)longreg(sib_byte);
-                            byte r2 = (byte)finalreg(sib_byte);
+                            byte r1 = (byte)Longreg(sib_byte);
+                            byte r2 = (byte)Finalreg(sib_byte);
 
                             if ((sib_byte + 32) / 32 % 2 == 0 && sib_byte % 32 < 8)
                             {
                                 // 
-                                p.data += mnemonics.r32_names[p.operands[c].append_reg(r2)];
+                                p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r2)];
                                 p.operands[c].flags |= OP_R32;
                             }
                             else
@@ -1778,14 +1778,14 @@ namespace Celery.Utils
                                 // we need to check the previous byte in this circumstance
                                 if (r2 == 5 && p.bytes[p.len - 1] < 64)
                                 {
-                                    p.data += mnemonics.r32_names[p.operands[c].append_reg(r1)];
+                                    p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r1)];
                                     p.operands[c].flags |= OP_R32;
                                 }
                                 else
                                 {
-                                    p.data += mnemonics.r32_names[p.operands[c].append_reg(r2)];
+                                    p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r2)];
                                     p.data += "+"; // + SIB Base
-                                    p.data += mnemonics.r32_names[p.operands[c].append_reg(r1)];
+                                    p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r1)];
                                     p.operands[c].flags |= OP_R32;
                                 }
 
@@ -1856,12 +1856,12 @@ namespace Celery.Utils
                         // grab the basic register initially
                         if (prev == MOD_NOT_FIRST)
                         {
-                            r = (byte)longreg(p.bytes[p.len]);
+                            r = (byte)Longreg(p.bytes[p.len]);
                         }
 
                         if (reg_from_opcode_byte)
                         {
-                            r = (byte)finalreg(p.bytes[p.len - 1]);
+                            r = (byte)Finalreg(p.bytes[p.len - 1]);
                         }
 
                         switch (p.operands[c].opmode)
@@ -1871,27 +1871,27 @@ namespace Celery.Utils
                                 p.data += "1";
                                 break;
                             case xmm0:
-                                p.operands[c].append_reg(0);
+                                p.operands[c].Append_reg(0);
                                 p.data += "xmm0";
                                 p.operands[c].flags |= OP_XMM;
                                 break;
                             case AL:
-                                p.operands[c].append_reg(R8_AL);
+                                p.operands[c].Append_reg(R8_AL);
                                 p.data += "al";
                                 p.operands[c].flags |= OP_R8;
                                 break;
                             case AH:
-                                p.operands[c].append_reg(R8_AH);
+                                p.operands[c].Append_reg(R8_AH);
                                 p.data += "ah";
                                 p.operands[c].flags |= OP_R8;
                                 break;
                             case AX:
-                                p.operands[c].append_reg(R16_AX);
+                                p.operands[c].Append_reg(R16_AX);
                                 p.data += "ax";
                                 p.operands[c].flags |= OP_R16;
                                 break;
                             case CL:
-                                p.operands[c].append_reg(R8_CL);
+                                p.operands[c].Append_reg(R8_CL);
                                 p.data += "cl";
                                 p.operands[c].flags |= OP_R8;
                                 break;
@@ -1911,59 +1911,59 @@ namespace Celery.Utils
                                 p.data += "fs";
                                 break;
                             case EAX:
-                                p.operands[c].append_reg(R32_EAX);
+                                p.operands[c].Append_reg(R32_EAX);
                                 p.data += "eax";
                                 p.operands[c].flags |= OP_R32;
                                 break;
                             case ECX:
-                                p.operands[c].append_reg(R32_ECX);
+                                p.operands[c].Append_reg(R32_ECX);
                                 p.data += "ecx";
                                 p.operands[c].flags |= OP_R32;
                                 break;
                             case EBP:
-                                p.operands[c].append_reg(R32_EBX);
+                                p.operands[c].Append_reg(R32_EBX);
                                 p.data += "ebp";
                                 p.operands[c].flags |= OP_R32;
                                 break;
                             case DRn:
-                                p.data += mnemonics.dr_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.dr_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_DR;
                                 break;
                             case CRn:
-                                p.data += mnemonics.cr_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.cr_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_CR;
                                 break;
                             case ST:
-                                p.data += mnemonics.st_names[p.operands[c].append_reg(0)];
+                                p.data += Mnemonics.st_names[p.operands[c].Append_reg(0)];
                                 p.operands[c].flags |= OP_ST;
                                 break;
                             case Sreg:
-                                p.data += mnemonics.sreg_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.sreg_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_SREG;
                                 break;
                             case mm:
-                                p.data += mnemonics.mm_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.mm_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_MM;
                                 break;
                             case xmm:
-                                p.data += mnemonics.xmm_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.xmm_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_XMM;
                                 break;
                             case r8:
-                                p.data += mnemonics.r8_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.r8_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_R8;
                                 break;
                             case r16:
-                                p.data += mnemonics.r16_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.r16_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_R16;
                                 break;
                             case r16_32:
                             case r32:
-                                p.data += mnemonics.r32_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_R32;
                                 break;
                             case r64:
-                                p.data += mnemonics.r64_names[p.operands[c].append_reg(r)];
+                                p.data += Mnemonics.r64_names[p.operands[c].Append_reg(r)];
                                 p.operands[c].flags |= OP_R64;
                                 break;
                             case m8:
@@ -2023,7 +2023,7 @@ namespace Celery.Utils
                                         prev = r;
                                     }
 
-                                    r = (byte)finalreg(p.bytes[p.len]);
+                                    r = (byte)Finalreg(p.bytes[p.len]);
 
                                     switch (p.bytes[p.len] / 64) // determine mode from `MOD` byte
                                     {
@@ -2032,40 +2032,40 @@ namespace Celery.Utils
                                             {
                                                 case r_m8:
                                                 case m8:
-                                                    p.data += mnemonics.r8_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.r8_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_R8;
                                                     break;
                                                 case r_m16:
                                                 case m16:
-                                                    p.data += mnemonics.r16_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.r16_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_R16;
                                                     break;
                                                 case mm_m64:
-                                                    p.data += mnemonics.mm_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.mm_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_MM;
                                                     break;
                                                 case xmm_m32:
                                                 case xmm_m64:
                                                 case xmm_m128:
                                                 case m128:
-                                                    p.data += mnemonics.xmm_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.xmm_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_XMM;
                                                     break;
                                                 case ST:
                                                 case STi:
-                                                    p.data += mnemonics.st_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.st_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_ST;
                                                     break;
                                                 case CRn:
-                                                    p.data += mnemonics.cr_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.cr_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_CR;
                                                     break;
                                                 case DRn:
-                                                    p.data += mnemonics.dr_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.dr_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_DR;
                                                     break;
                                                 default: // Anything else is going to be 32-bit
-                                                    p.data += mnemonics.r32_names[p.operands[c].append_reg(r)];
+                                                    p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r)];
                                                     p.operands[c].flags |= OP_R32;
                                                     break;
                                             }
@@ -2085,7 +2085,7 @@ namespace Celery.Utils
                                                         p.len += sizeof(uint);
                                                         break;
                                                     default:
-                                                        p.data += mnemonics.r32_names[p.operands[c].append_reg(r)];
+                                                        p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r)];
                                                         p.operands[c].flags |= OP_R32;
                                                         break;
                                                 }
@@ -2100,7 +2100,7 @@ namespace Celery.Utils
                                                 get_sib(sizeof(byte)); // Translate SIB byte (with BYTE offset)
                                             else
                                             {
-                                                p.data += mnemonics.r32_names[p.operands[c].append_reg(r)];
+                                                p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r)];
                                                 p.operands[c].flags |= OP_R32;
                                                 get_imm8(p.bytes[p.len + 1], false);
                                             }
@@ -2114,7 +2114,7 @@ namespace Celery.Utils
                                                 get_sib(sizeof(uint)); // Translate SIB byte (with DWORD offset)
                                             else
                                             {
-                                                p.data += mnemonics.r32_names[p.operands[c].append_reg(r)];
+                                                p.data += Mnemonics.r32_names[p.operands[c].Append_reg(r)];
                                                 p.operands[c].flags |= OP_R32;
                                                 get_imm32(BitConverter.ToUInt32(p.bytes, p.len + 1), false);
                                             }
@@ -2183,14 +2183,14 @@ namespace Celery.Utils
             return p;
         }
 
-        public static List<inst> read(int handle, int address, int count)
+        public static List<Inst> Read(int handle, int address, int count)
         {
             int at = address;
-            List<inst> inst_list = new List<inst>();
+            List<Inst> inst_list = new List<Inst>();
 
             for (int c = 0; c < count; c++)
             {
-                inst i = read(handle, at);
+                Inst i = Read(handle, at);
                 inst_list.Add(i);
                 at += i.len;
             }
@@ -2198,14 +2198,14 @@ namespace Celery.Utils
             return inst_list;
         }
 
-        public static List<inst> read_range(int handle, int from, int to)
+        public static List<Inst> Read_range(int handle, int from, int to)
         {
             int at = from;
-            List<inst> inst_list = new List<inst>();
+            List<Inst> inst_list = new List<Inst>();
 
             while (at < to)
             {
-                inst i = read(handle, at);
+                Inst i = Read(handle, at);
                 inst_list.Add(i);
                 at += i.len;
             }

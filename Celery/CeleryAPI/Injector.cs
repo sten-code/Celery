@@ -6,7 +6,6 @@ using System.Threading;
 using System.Security.Principal;
 using Celery.Utils;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Celery.CeleryAPI
 {
@@ -37,7 +36,7 @@ namespace Celery.CeleryAPI
 
         public bool FindProcess(ref ProcInfo outPInfo)
         {
-            foreach (ProcInfo pinfo in openProcessesByName(InjectProcessName))
+            foreach (ProcInfo pinfo in OpenProcessesByName(InjectProcessName))
             {
                 outPInfo = pinfo;
                 return true;
@@ -48,8 +47,8 @@ namespace Celery.CeleryAPI
 
         public static bool IsInjected(ProcInfo pinfo)
         {
-            if (pinfo.isOpen())
-                if (pinfo.readByte(Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIcon") + 3) == 0x43)
+            if (pinfo.IsOpen())
+                if (pinfo.ReadByte(Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIcon") + 3) == 0x43)
                     return true;
 
             return false;
@@ -72,7 +71,7 @@ namespace Celery.CeleryAPI
 
             int dontGoToInf = 0;
 
-            while (pinfo.readUInt32(functionPtr + 8) > 0)
+            while (pinfo.ReadUInt32(functionPtr + 8) > 0)
             {
                 Thread.Sleep(10);
                 if (dontGoToInf++ > 100) return;
@@ -92,9 +91,9 @@ namespace Celery.CeleryAPI
             int sourcePtr = Imports.VirtualAllocEx(pinfo.handle, 0, bytesUtf8.Length, Imports.MEM_RESERVE | Imports.MEM_COMMIT, Imports.PAGE_READWRITE);
             Imports.WriteProcessMemory(pinfo.handle, sourcePtr, bytesUtf8, bytesUtf8.Length, ref nothing);
 
-            pinfo.writeUInt32(functionPtr + 8, 1); // Type `1` = script was sent to be executed
-            pinfo.writeInt32(functionPtr + 12, sourcePtr);
-            pinfo.writeInt32(functionPtr + 16, bytesUtf8.Length);
+            pinfo.WriteUInt32(functionPtr + 8, 1); // Type `1` = script was sent to be executed
+            pinfo.WriteInt32(functionPtr + 12, sourcePtr);
+            pinfo.WriteInt32(functionPtr + 16, bytesUtf8.Length);
 
             //pinfo.setPageProtect(functionPtr, 0x20, oldProtect);
         }
@@ -142,7 +141,7 @@ namespace Celery.CeleryAPI
             //pinfo.writeInt32(functionPtr + 12, 0);
             //pinfo.writeInt32(functionPtr + 16, 0);
             //pinfo.setPageProtect(functionPtr, 0x20, oldProtect);
-            var read = pinfo.readBytes(functionPtr + 8, 512);
+            var read = pinfo.ReadBytes(functionPtr + 8, 512);
             for (int i = 0; i < 512 - 2; i++)
             {
                 if (read[i + 1] == 0x8B && read[i + 2] == 0xFF)
@@ -150,12 +149,12 @@ namespace Celery.CeleryAPI
 
                 bytes1.Add(0);
             }
-            pinfo.setPageProtect(functionPtr, bytes1.Count + 8, Imports.PAGE_EXECUTE_READWRITE);
-            pinfo.writeBytes(functionPtr + 8, bytes1.ToArray());
+            pinfo.SetPageProtect(functionPtr, bytes1.Count + 8, Imports.PAGE_EXECUTE_READWRITE);
+            pinfo.WriteBytes(functionPtr + 8, bytes1.ToArray());
 
             // ### comment this out if revert
             functionPtr = Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIconEx");
-            read = pinfo.readBytes(functionPtr, 512);
+            read = pinfo.ReadBytes(functionPtr, 512);
             for (int i = 0; i < 512 - 2; i++)
             {
                 if (read[i + 1] == 0x8B && read[i + 2] == 0xFF)
@@ -163,8 +162,8 @@ namespace Celery.CeleryAPI
 
                 bytes2.Add(0);
             }
-            pinfo.setPageProtect(functionPtr, bytes2.Count, Imports.PAGE_EXECUTE_READWRITE);
-            pinfo.writeBytes(functionPtr, bytes2.ToArray());
+            pinfo.SetPageProtect(functionPtr, bytes2.Count, Imports.PAGE_EXECUTE_READWRITE);
+            pinfo.WriteBytes(functionPtr, bytes2.ToArray());
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "update.txt"))
             {
                 if (File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "update.txt") == "true")
@@ -183,7 +182,7 @@ namespace Celery.CeleryAPI
             bool mapResult = MapInject.ManualMap(pinfo.processRef, AppDomain.CurrentDomain.BaseDirectory + "dll/" + InjectFileName);
             if (mapResult)
             {
-                while (pinfo.isOpen() && !IsInjected(pinfo))
+                while (pinfo.IsOpen() && !IsInjected(pinfo))
                 {
                     Thread.Sleep(10);
                 }
@@ -220,10 +219,10 @@ namespace Celery.CeleryAPI
             }
         }
 
-        public static List<ProcInfo> getInjectedProcesses()
+        public static List<ProcInfo> GetInjectedProcesses()
         {
             List<ProcInfo> results = new List<ProcInfo>();
-            foreach (ProcInfo pinfo in openProcessesByName(InjectProcessName))
+            foreach (ProcInfo pinfo in OpenProcessesByName(InjectProcessName))
             {
                 if (IsInjected(pinfo))
                 {

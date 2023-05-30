@@ -1,10 +1,7 @@
 ﻿using Celery.CeleryAPI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Celery.Utils
 {
@@ -63,7 +60,7 @@ namespace Celery.Utils
                 SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(INPUT)));
         }
 
-        public static void pressKey(uint c)
+        public static void PressKey(uint c)
         {
             // Construct list of inputs in order to send them through a single SendInput call at the end.
             List<INPUT> inputs = new List<INPUT>();
@@ -95,7 +92,7 @@ namespace Celery.Utils
                 SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(INPUT)));
         }
 
-        public static void releaseKey(uint c)
+        public static void ReleaseKey(uint c)
         {
             // Construct list of inputs in order to send them through a single SendInput call at the end.
             List<INPUT> inputs = new List<INPUT>();

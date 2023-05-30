@@ -49,7 +49,7 @@ namespace Celery
             if (!Directory.Exists(Config.ThemesPath))
                 Directory.CreateDirectory(Config.ThemesPath);
             new SettingsSaveManager(Config.SettingsFilePath);
-            ExtractZipFromResources("Ace", Properties.Resources.Ace, "\\bin");
+            ExtractZipFromResources("Ace", Properties.Resources.Ace, "bin");
             ExtractZipFromResources("dll", Properties.Resources.dll, "");
 
             // Get all themes from the themes folder
@@ -131,15 +131,15 @@ namespace Celery
                         return;
                     }
 
-                    if (!isInit)
+                    if (isInit)
+                        return;
+
+                    Utils.MessageBoxResult result = await MessageBoxUtils.ShowMessage("Restart Required", "Not all colors are applied, a restart is required for all changes to take effect. Would you like to restart now?", false, MessageBoxButtons.YesNo);
+                    if (result == Utils.MessageBoxResult.Yes)
                     {
-                        Utils.MessageBoxResult result = await MessageBoxUtils.ShowMessage("Restart Required", "Not all colors are applied, a restart is required for all changes to take effect. Would you like to restart now?", false, MessageBoxButtons.YesNo);
-                        if (result == Utils.MessageBoxResult.Yes)
-                        {
-                            await SaveTabs();
-                            Process.Start(Assembly.GetExecutingAssembly().Location);
-                            Application.Current.Shutdown();
-                        }
+                        await SaveTabs();
+                        Process.Start(Assembly.GetExecutingAssembly().Location);
+                        Application.Current.Shutdown();
                     }
                 }),
                 new BooleanSetting("Save Tabs", "savetabs", _saveTabs, (value) =>
@@ -214,14 +214,16 @@ namespace Celery
 
         public async void ExtractZipFromResources(string name, byte[] resource, string path)
         {
-            if (!Directory.Exists(Config.ApplicationPath + path + "\\" + name))
+            string dir = Path.Combine(Config.ApplicationPath, path, name);
+            if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(Config.ApplicationPath + path + "\\" + name);
+                Directory.CreateDirectory(dir);
                 try
                 {
-                    File.WriteAllBytes($"{Config.ApplicationPath}\\{name}.zip", resource);
-                    ZipFile.ExtractToDirectory($"{Config.ApplicationPath}\\{name}.zip", Config.ApplicationPath + path + "\\" + name);
-                    File.Delete($"{Config.ApplicationPath}\\{name}.zip");
+                    string zip = Path.Combine(Config.ApplicationPath, name + ".zip");
+                    File.WriteAllBytes(zip, resource);
+                    ZipFile.ExtractToDirectory(zip, dir);
+                    File.Delete(zip);
                 }
                 catch (Exception ex)
                 {
@@ -287,7 +289,7 @@ namespace Celery
             open.Click += (s, e) =>
             {
                 string name = ((ListBoxItem)((ContextMenu)open.Parent).PlacementTarget).Content.ToString();
-                Tabs.MakeTab(File.ReadAllText(Path.Combine(Config.ScriptsPath, name + ".lua")), name);
+                Tabs.MakeTab(File.ReadAllText(Path.Combine(Config.ScriptsPath, name)), Path.GetFileNameWithoutExtension(Path.Combine(Config.ScriptsPath, name)));
             };
             ListBoxItem item = new ListBoxItem
             {
@@ -310,7 +312,7 @@ namespace Celery
             ScriptList.Items.SortDescriptions.Add(new SortDescription("Content", ListSortDirection.Ascending));
             foreach (string filename in Directory.GetFiles(Config.ScriptsPath))
             {
-                ScriptList.Items.Add(CreateScriptItem(Path.GetFileNameWithoutExtension(filename)));
+                ScriptList.Items.Add(CreateScriptItem(Path.GetFileName(filename)));
             }
 
             FileSystemWatcher watcher = new FileSystemWatcher(Config.ScriptsPath)
@@ -324,7 +326,7 @@ namespace Celery
             {
                 Dispatcher.Invoke(() =>
                 {
-                    ScriptList.Items.Add(CreateScriptItem(Path.GetFileNameWithoutExtension(e.FullPath)));
+                    ScriptList.Items.Add(CreateScriptItem(Path.GetFileName(e.FullPath)));
                     ScriptList.Items.Refresh();
                 });
             };
@@ -332,10 +334,9 @@ namespace Celery
             {
                 Dispatcher.Invoke(() =>
                 {
-                    string itemRemove = Path.GetFileNameWithoutExtension(e.FullPath);
                     for (int i = ScriptList.Items.Count - 1; i >= 0; --i)
                     {
-                        if (((ListBoxItem)ScriptList.Items[i]).Content.ToString() == itemRemove)
+                        if (((ListBoxItem)ScriptList.Items[i]).Content.ToString() == Path.GetFileName(e.FullPath))
                         {
                             ScriptList.Items.RemoveAt(i);
                         }
@@ -347,15 +348,14 @@ namespace Celery
             {
                 Dispatcher.Invoke(() =>
                 {
-                    string itemRemove = Path.GetFileNameWithoutExtension(e.OldFullPath);
                     for (int i = ScriptList.Items.Count - 1; i >= 0; --i)
                     {
-                        if (((ListBoxItem)ScriptList.Items[i]).Content.ToString() == itemRemove)
+                        if (((ListBoxItem)ScriptList.Items[i]).Content.ToString() == Path.GetFileName(e.OldFullPath))
                         {
                             ScriptList.Items.RemoveAt(i);
                         }
                     }
-                    ScriptList.Items.Add(CreateScriptItem(Path.GetFileNameWithoutExtension(e.FullPath)));
+                    ScriptList.Items.Add(CreateScriptItem(Path.GetFileName(e.FullPath)));
                     ScriptList.Items.Refresh();
                 });
             };
@@ -383,7 +383,7 @@ namespace Celery
 
         private void ScriptItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Tabs.MakeTab(File.ReadAllText(Path.Combine(Config.ScriptsPath, ((ListBoxItem)sender).Content.ToString() + ".lua")), ((ListBoxItem)sender).Content.ToString());
+            Tabs.MakeTab(File.ReadAllText(Path.Combine(Config.ScriptsPath, ((ListBoxItem)sender).Content.ToString())), Path.GetFileNameWithoutExtension(Path.Combine(Config.ScriptsPath, ((ListBoxItem)sender).Content.ToString())));
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -396,7 +396,7 @@ namespace Celery
             {
                 FileName = ((TabItem)Tabs.SelectedValue).Header.ToString(),
                 DefaultExt = ".lua",
-                Filter = "Lua Files|*.lua",
+                Filter = "Lua Files|*.lua|Text Files|*.txt",
                 InitialDirectory = Config.ScriptsPath
             };
 
@@ -496,7 +496,7 @@ namespace Celery
                 {
                     while (DebuggingMode)
                     {
-                        List<ProcInfo> procs = ProcessUtil.openProcessesByName(Injector.InjectProcessName);
+                        List<ProcInfo> procs = ProcessUtil.OpenProcessesByName(Injector.InjectProcessName);
                         foreach (ProcInfo proc in procs)
                         {
                             if (!openedProcs.Contains(proc.processId))
@@ -522,6 +522,11 @@ namespace Celery
                     Thread.Sleep(3000);
                 }
             }));
+        }
+
+        private async void OpenInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            await MessageBoxUtils.ShowMessage("About", new AboutPage(), true, MessageBoxButtons.None, 500, 350);
         }
     }
 }

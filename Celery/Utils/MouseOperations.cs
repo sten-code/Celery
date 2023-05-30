@@ -78,7 +78,7 @@ namespace Celery.Utils
             mouse_event((uint)value, (uint)position.X, (uint)position.Y, 0, 0);
         }
 
-        public static void doMouse1Click()
+        public static void DoMouse1Click()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -87,7 +87,7 @@ namespace Celery.Utils
             mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
         }
 
-        public static void doMouse2Click()
+        public static void DoMouse2Click()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -97,7 +97,7 @@ namespace Celery.Utils
                 mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
         }
 
-        public static void doMouse1Down()
+        public static void DoMouse1Down()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -107,7 +107,7 @@ namespace Celery.Utils
                 mouse_event(MOUSEEVENTF_LEFTDOWN, X, Y, 0, 0);
         }
 
-        public static void doMouse1Up()
+        public static void DoMouse1Up()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -117,7 +117,7 @@ namespace Celery.Utils
                 mouse_event(MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
         }
 
-        public static void doMouse2Down()
+        public static void DoMouse2Down()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -127,7 +127,7 @@ namespace Celery.Utils
                 mouse_event(MOUSEEVENTF_RIGHTDOWN, X, Y, 0, 0);
         }
 
-        public static void doMouse2Up()
+        public static void DoMouse2Up()
         {
             //Call the imported function with the cursor's current position
             MousePoint position = GetCursorPosition();
@@ -137,14 +137,14 @@ namespace Celery.Utils
                 mouse_event(MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
         }
 
-        public static void mouseMoveRel(int x, int y)
+        public static void MouseMoveRel(int x, int y)
         {
             GetWindowRect((uint)Imports.FindWindow(null, "Roblox"), out RECT rc);
             if (GetForegroundWindow() == (uint)Imports.FindWindow(null, "Roblox"))
                 SetCursorPos(rc.Left + x, rc.Top + y);
         }
 
-        public static void mouseMoveAbs(int x, int y)
+        public static void MouseMoveAbs(int x, int y)
         {
             if (GetForegroundWindow() == (uint)Imports.FindWindow(null, "Roblox"))
                 SetCursorPos(x, y);

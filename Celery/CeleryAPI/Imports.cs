@@ -159,36 +159,12 @@ namespace Celery.CeleryAPI
         [DllImport("kernel32.dll", EntryPoint = "GetCurrentProcessId")]
         public static extern uint GetCurrentProcessId();
 
-        [System.Runtime.InteropServices.DllImportAttribute("kernel32.dll", EntryPoint = "FreeConsole")]
-        [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", EntryPoint = "FreeConsole")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool FreeConsole();
 
         [DllImport("kernel32.dll", EntryPoint = "CreateFile", SetLastError = true)]
-        public static extern uint CreateFile(string lpFileName, uint
-        dwDesiredAccess, uint dwShareMode, uint lpSecurityAttributes, uint
-        dwCreationDisposition, uint dwFlagsAndAttributes, uint hTemplateFile);
-
-        /*public static class ConsoleHelper
-        {
-            public static void CreateConsole()
-            {
-                AllocConsole();
-
-                // stdout's handle seems to always be equal to 7
-                uint defaultStdout = 7;
-                uint currentStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-
-                if (currentStdout != defaultStdout)
-                    // reset stdout
-                    SetStdHandle(STD_OUTPUT_HANDLE, defaultStdout);
-
-                // reopen stdout
-                TextWriter writer = new StreamWriter(System.Console.OpenStandardOutput())
-                { AutoFlush = true };
-
-                System.Console.SetOut(writer);
-            }
-        }*/
+        public static extern uint CreateFile(string lpFileName, uint dwDesiredAccess, uint dwShareMode, uint lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes, uint hTemplateFile);
 
         public static class ConsoleHelper
         {

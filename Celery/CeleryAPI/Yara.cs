@@ -12,7 +12,7 @@ namespace CeleryApp.CeleryAPI
         public static int codeCaveStart;
         public static int codeCaveEnd;
 
-        public static void setCave(ProcInfo pinfo, int start, int end)
+        public static void SetCave(ProcInfo pinfo, int start, int end)
         {
             codeCaveStart = start;
             codeCaveEnd = end;
@@ -20,10 +20,10 @@ namespace CeleryApp.CeleryAPI
 
             byte[] bytes = new byte[end - start];
             Array.Clear(bytes, 0, bytes.Length);
-            pinfo.writeBytes(codeCaveStart, bytes, bytes.Length);
+            pinfo.WriteBytes(codeCaveStart, bytes, bytes.Length);
         }
 
-        public static int silentAlloc(ProcInfo pinfo, int size, uint protect)
+        public static int SilentAlloc(ProcInfo pinfo, int size, uint protect)
         {
             if (codeCaveStart == 0 || codeCaveAt == 0)
             {
@@ -31,12 +31,12 @@ namespace CeleryApp.CeleryAPI
             }
 
             int at = codeCaveAt;
-            pinfo.setPageProtect(codeCaveAt, size, protect);
+            pinfo.SetPageProtect(codeCaveAt, size, protect);
             codeCaveAt += size + (size % 4);
             return at;
         }
 
-        public static List<int> getRbxWow64Clone(ProcInfo pinfo)
+        public static List<int> GetRbxWow64Clone(ProcInfo pinfo)
         {
             List<int> results = new List<int>();
             int start = 0;
@@ -54,7 +54,7 @@ namespace CeleryApp.CeleryAPI
             {
                 if (page.AllocationProtect == Imports.PAGE_EXECUTE_READWRITE && page.State == Imports.MEM_COMMIT)
                 {
-                    if (pinfo.readByte(start + 0xA) == 0xEA && pinfo.readByte(start + 0x65) != 0xE9)
+                    if (pinfo.ReadByte(start + 0xA) == 0xEA && pinfo.ReadByte(start + 0x65) != 0xE9)
                     {
                         results.Add(start);
                         //if (results.Count == 2) break; 
@@ -70,7 +70,7 @@ namespace CeleryApp.CeleryAPI
         // "stackRef" must be a small allocated memory with READ/WRITE
         // privileges. It enables us to watch what YARA is reading by
         // writing the information there
-        public static byte[] makePayload(int stackRef)
+        public static byte[] MakePayload(int stackRef)
         {
             /*
             hNtQueryVirtualMemory(
@@ -155,36 +155,36 @@ namespace CeleryApp.CeleryAPI
         {
             var caveStart = Imports.GetProcAddress(Imports.GetModuleHandle("combase.dll"), "ObjectStublessClient3");
 
-            if (pinfo.getPage(caveStart).Protect == Imports.PAGE_EXECUTE_READWRITE)
+            if (pinfo.GetPage(caveStart).Protect == Imports.PAGE_EXECUTE_READWRITE)
             {
                 return true;
             }
 
-            setCave(pinfo, caveStart, caveStart + 0x800);
+            SetCave(pinfo, caveStart, caveStart + 0x800);
 
             var ntQueryVirtualMemory = Imports.GetProcAddress(Imports.GetModuleHandle("ntdll.dll"), "NtQueryVirtualMemory");
             var hookLocation1 = ntQueryVirtualMemory + 0xA;
 
-            var fnLocation = silentAlloc(pinfo, 0x400, Imports.PAGE_EXECUTE_READWRITE);
+            var fnLocation = SilentAlloc(pinfo, 0x400, Imports.PAGE_EXECUTE_READWRITE);
             var dataLocation = fnLocation + 0x300;
             var watchLocation = dataLocation + 0;
 
-            pinfo.writeInt32(watchLocation + 0, watchLocation - 0x20); // place to write registers for debugging
-            pinfo.writeInt32(watchLocation + 4, 0);
+            pinfo.WriteInt32(watchLocation + 0, watchLocation - 0x20); // place to write registers for debugging
+            pinfo.WriteInt32(watchLocation + 4, 0);
             //util.writeInt(dataLocation + 4, 0);// util.getSection(".vmp1").end);
             //util.writeInt(dataLocation + 8, 0x7FFFFFFF);
 
-            var payload = makePayload(watchLocation);
-            pinfo.writeBytes(fnLocation, payload, payload.Length);
+            var payload = MakePayload(watchLocation);
+            pinfo.WriteBytes(fnLocation, payload, payload.Length);
 
-            pinfo.placeJmp(hookLocation1, fnLocation);//, 5);
+            pinfo.PlaceJmp(hookLocation1, fnLocation);//, 5);
 
-            foreach (var rbxWow64 in getRbxWow64Clone(pinfo))
+            foreach (var rbxWow64 in GetRbxWow64Clone(pinfo))
             {
                 //MessageBox.Show("Found rbxWow64 clone: " + rbxWow64.ToString("X8"));
                 var rbxQueryVirtualMemoryStart = rbxWow64 + 0x50;
 
-                pinfo.placeJmp(rbxQueryVirtualMemoryStart, ntQueryVirtualMemory);
+                pinfo.PlaceJmp(rbxQueryVirtualMemoryStart, ntQueryVirtualMemory);
             }
 
             // IF YOU WANT TO WATCH WHAT YARA IS READING EVERY X SECONDS

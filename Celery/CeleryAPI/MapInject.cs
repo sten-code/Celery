@@ -159,7 +159,7 @@ namespace Celery.CeleryAPI
             public IMAGE_DATA_DIRECTORY[] DataDirectory;
         };
 
-        private static IMAGE_OPTIONAL_HEADER toImageOptionalHeader(byte[] byteArray, int offset)
+        private static IMAGE_OPTIONAL_HEADER ToImageOptionalHeader(byte[] byteArray, int offset)
         {
             IMAGE_OPTIONAL_HEADER x;
             x.Magic = BitConverter.ToUInt16(byteArray, offset + 0);
@@ -217,7 +217,7 @@ namespace Celery.CeleryAPI
             public ushort Characteristics;
         };
 
-        private static IMAGE_FILE_HEADER toImageFileHeader(byte[] byteArray, int offset)
+        private static IMAGE_FILE_HEADER ToImageFileHeader(byte[] byteArray, int offset)
         {
             IMAGE_FILE_HEADER x;
             x.Machine = BitConverter.ToUInt16(byteArray, offset + 0);
@@ -253,7 +253,7 @@ namespace Celery.CeleryAPI
             public uint e_lfanew;                    // LONG // File address of new exe header
         };
 
-        private static IMAGE_DOS_HEADER toImageDosHeader(byte[] byteArray, int offset)
+        private static IMAGE_DOS_HEADER ToImageDosHeader(byte[] byteArray, int offset)
         {
             IMAGE_DOS_HEADER x;
             x.e_magic = BitConverter.ToUInt16(byteArray, offset + 0);
@@ -299,12 +299,12 @@ namespace Celery.CeleryAPI
             public IMAGE_OPTIONAL_HEADER OptionalHeader; // + 24
         };
 
-        private static IMAGE_NT_HEADERS toImageNtHeaders(byte[] byteArray, int offset)
+        private static IMAGE_NT_HEADERS ToImageNtHeaders(byte[] byteArray, int offset)
         {
             IMAGE_NT_HEADERS ntHeaders;
             ntHeaders.Signature = BitConverter.ToUInt32(byteArray, offset + 0);
-            ntHeaders.FileHeader = toImageFileHeader(byteArray, offset + 4);
-            ntHeaders.OptionalHeader = toImageOptionalHeader(byteArray, offset + 24);
+            ntHeaders.FileHeader = ToImageFileHeader(byteArray, offset + 4);
+            ntHeaders.OptionalHeader = ToImageOptionalHeader(byteArray, offset + 24);
             return ntHeaders;
         }
 
@@ -335,7 +335,7 @@ namespace Celery.CeleryAPI
             public uint Characteristics; // +0x24
         }
 
-        private static IMAGE_SECTION_HEADER toImageSectionHeader(byte[] byteArray, int offset)
+        private static IMAGE_SECTION_HEADER ToImageSectionHeader(byte[] byteArray, int offset)
         {
             IMAGE_SECTION_HEADER sectionHeader;
             sectionHeader.Name = new byte[8];
@@ -362,7 +362,7 @@ namespace Celery.CeleryAPI
         const uint STATUS_PENDING = 0x00000103;
         const uint STILL_ACTIVE = STATUS_PENDING;
 
-        private static byte[] makePayload()
+        private static byte[] MakePayload()
         {
             return new byte[] {
                 0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x60, 0x83, 0x7D, 0x08, 0x00, 0x75, 0x0F, 0x8B, 0x45, 0x08, 0xC7,
@@ -443,14 +443,14 @@ namespace Celery.CeleryAPI
             IMAGE_OPTIONAL_HEADER pOldOptHeader;
             IMAGE_FILE_HEADER pOldFileHeader;
 
-            var imageDosHeader = toImageDosHeader(pSrcData, 0);
+            var imageDosHeader = ToImageDosHeader(pSrcData, 0);
 
             if (imageDosHeader.e_magic != 0x5A4D) // "MZ"
             {
                 throw new Exception("Invalid file type");
             }
 
-            pOldNtHeader = toImageNtHeaders(pSrcData, (int)imageDosHeader.e_lfanew);
+            pOldNtHeader = ToImageNtHeaders(pSrcData, (int)imageDosHeader.e_lfanew);
             pOldOptHeader = pOldNtHeader.OptionalHeader;
             pOldFileHeader = pOldNtHeader.FileHeader;
 
@@ -504,7 +504,7 @@ namespace Celery.CeleryAPI
             // IMAGE_SECTION_HEADER* pSectionHeader = IMAGE_FIRST_SECTION(pOldNtHeader);
             for (uint i = 0; i != pOldFileHeader.NumberOfSections; ++i, pSectionHeaderAt += 0x28)
             {
-                IMAGE_SECTION_HEADER pSectionHeader = toImageSectionHeader(pSrcData, pSectionHeaderAt);
+                IMAGE_SECTION_HEADER pSectionHeader = ToImageSectionHeader(pSrcData, pSectionHeaderAt);
                 if (pSectionHeader.SizeOfRawData != 0)
                 {
                     byte[] bytes = new byte[pSectionHeader.SizeOfRawData];
@@ -538,7 +538,7 @@ namespace Celery.CeleryAPI
                 throw new Exception("Memory shellcode allocation failed (ex) [Error Code: " + Imports.GetLastError() + "]");
             }
 
-            var payload = makePayload();
+            var payload = MakePayload();
 
             if (Imports.WriteProcessMemory(handle, pShellcode, payload, payload.Length, ref nBytes) == 0)
             {
@@ -610,7 +610,7 @@ namespace Celery.CeleryAPI
             // IMAGE_SECTION_HEADER* pSectionHeader = IMAGE_FIRST_SECTION(pOldNtHeader);
             for (uint i = 0; i != pOldFileHeader.NumberOfSections; ++i, pSectionHeaderAt += 0x28)
             {
-                IMAGE_SECTION_HEADER pSectionHeader = toImageSectionHeader(pSrcData, pSectionHeaderAt);
+                IMAGE_SECTION_HEADER pSectionHeader = ToImageSectionHeader(pSrcData, pSectionHeaderAt);
                 if (pSectionHeader.SizeOfRawData != 0)
                 {
                     var headerName = "";

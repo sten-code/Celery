@@ -68,6 +68,9 @@
     </ApplicationDefinition>
     <Compile Include="CeleryAPI\Injector.cs" />
     <Compile Include="CeleryAPI\CeleryAPI.cs" />
+    <Compile Include="Controls\AboutPage.xaml.cs">
+      <DependentUpon>AboutPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ScriptHub\ScriptHub.xaml.cs">
       <DependentUpon>ScriptHub.xaml</DependentUpon>
     </Compile>
@@ -106,6 +109,10 @@
     <Compile Include="Utils\KeyOperations.cs" />
     <Compile Include="Utils\MessageBoxUtils.cs" />
     <Compile Include="Utils\MouseOperations.cs" />
+    <Page Include="Controls\AboutPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\MessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -34,12 +34,11 @@
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border Name="Border"
                             Padding="5"
-                            SnapsToDevicePixels="True"
                             Background="{TemplateBinding Background}" 
                             CornerRadius="5"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="{TemplateBinding BorderBrush}">
-                        <ContentPresenter HorizontalAlignment="Left" MaxWidth="110" />
+                        <ContentPresenter/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="true">

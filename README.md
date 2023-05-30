@@ -20,14 +20,14 @@
 
 <h1 align="center">Getting Started</h1>
 
-* Open Roblox from the Microsoft Store and join a game. 
-    * Make sure you aren't using the web version as it's not currently supported by Celery.
-* Click the attach button, its an icon that looks like a syringe.
-* It should say "Celery Loaded" in the top left of Roblox
-    * If it doesn't, there might be an issue with your antivirus. Click here to see how fix it.
-* Search for a script that is fitted for the game you are currently in.
+* Open [Roblox](https://www.microsoft.com/store/productId/9NBLGGGZM6WM) from the Microsoft Store and join a game. 
+    * Make sure you aren't using the web version as it's not supported by Celery.
+* Click the inject button, its an icon that looks like a syringe.
+* Wait a couple of seconds and it should say "Celery Loaded" in the top left of Roblox
+    * If it doesn't, there might be an issue with your antivirus.
+* Search for a script that is fitted for the game you are currently in and paste the script inside the text box within Celery.
     * Please use reputable scripts, it's possible to get hacked yourself if you aren't careful with what you do.
-* Paste the script inside the text box within Celery and click the execute button which is the one with the play icon.
+* Click the execute button which is a play icon.
 
 <h1 align="center">Settings</h1>
 
@@ -35,7 +35,7 @@
 Enabling Topmost allows Celery to be on top of all other programs, it can only be minimized by pressing the minimize button.
 
 ## Auto Attach
-Auto Attach will attach Celery the moment you open Roblox or Celery itself.
+Auto Attach will inject Celery the moment you open Roblox or Celery itself.
 
 ## Startup Animation
 If enabled there will be an animation of 3.5 seconds when you start Celery.

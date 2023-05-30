@@ -55,6 +55,23 @@ namespace Celery.Utils
             sb.Children.Remove(anim);
         }
 
+        public static void AnimateDoubleProperty(DependencyObject obj, double get, double set, string property, IEasingFunction easing, int duration = 500)
+        {
+            DoubleAnimation anim = new DoubleAnimation
+            {
+                From = get,
+                To = set,
+                Duration = TimeSpan.FromMilliseconds(duration),
+                EasingFunction = easing
+            };
+            Storyboard.SetTarget(anim, obj);
+            Storyboard.SetTargetProperty(anim, new PropertyPath(property));
+            Storyboard sb = new Storyboard();
+            sb.Children.Add(anim);
+            sb.Begin();
+            sb.Children.Remove(anim);
+        }
+
         public static void AnimateThicknessProperty(DependencyObject obj, Thickness get, Thickness set, DependencyProperty property, IEasingFunction easing, int duration = 500)
         {
             ThicknessAnimation anim = new ThicknessAnimation

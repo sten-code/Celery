@@ -7,7 +7,7 @@ namespace Celery.Utils
     {
         // Creates the file at the path if it does not exist.
         // Otherwise, returns false if the file does exist.
-        public static bool checkCreateFile(string path)
+        public static bool CheckCreateFile(string path)
         {
             if (File.Exists(path))
                 return true;
@@ -28,7 +28,7 @@ namespace Celery.Utils
 
         }
 
-        public static bool createFileText(string filepath, string content)
+        public static bool CreateFileText(string filepath, string content)
         {
             try
             {
@@ -56,12 +56,12 @@ namespace Celery.Utils
         }
 
         // Creates the file at the path if it does not exist, and writes information to the file.
-        public static bool checkCreateFile(string path, string defaultValue)
+        public static bool CheckCreateFile(string path, string defaultValue)
         {
             if (File.Exists(path))
                 return true;
 
-            checkCreateFile(path);
+            CheckCreateFile(path);
 
             try
             {

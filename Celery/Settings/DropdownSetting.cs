@@ -16,8 +16,7 @@ namespace Celery.Settings
             Items = items;
             OnChangeEvent = onChange;
             Value = GetValue(defaultItem);
-            if (OnChangeEvent != null)
-                OnChangeEvent(Value, true);
+            OnChangeEvent?.Invoke(Value, true);
         }
 
         public override Grid GetComponent()
@@ -34,11 +33,9 @@ namespace Celery.Settings
             comboBox.SelectionChanged += (s, e) =>
             {
                 Value = (string)comboBox.SelectedItem;
-                if (OnChangeEvent != null)
-                    OnChangeEvent(Value, false);
+                OnChangeEvent?.Invoke(Value, false);
 
-                if (SettingsSaveManager.Instance != null)
-                    SettingsSaveManager.Instance.Save(Identifier, Value);
+                SettingsSaveManager.Instance?.Save(Identifier, Value);
             };
             grid.Children.Add(comboBox);
             return grid;

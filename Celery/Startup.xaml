@@ -5,9 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Celery"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        mc:Ignorable="d" WindowStyle="None" Icon="{StaticResource CeleryIcon}"
+        mc:Ignorable="d" WindowStyle="None"
         Title="Startup" Height="280" Width="500" ResizeMode="NoResize" AllowsTransparency="True"
         Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" Background="Transparent">
+    <Window.Icon>
+        <DrawingImage>
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="{DynamicResource LogoBrush}" Geometry="{StaticResource CeleryLogo}" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+    </Window.Icon>
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0"
                             UseAeroCaptionButtons="False"
@@ -23,7 +32,7 @@
                   Data="{StaticResource CeleryLogo}"/>
             <TextBlock x:Name="WelcomeLabel" Text="Welcome to" Foreground="{DynamicResource ForegroundBrush}" FontSize="25" 
                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                       Margin="0,80,60,0" FontWeight="Light"/>
+                       Margin="0,80,50,0" FontWeight="Light"/>
 
             <TextBlock x:Name="CeleryLabel" Text="Celery" Foreground="{DynamicResource LogoBrush}" FontSize="25" 
                        HorizontalAlignment="Right" VerticalAlignment="Top"
