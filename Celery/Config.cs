@@ -7,7 +7,7 @@ namespace Celery
     public static class Config
     {
         // Version template: <release type (alpha | beta | release)>.<standard update>.<bug fixes/small changes>
-        public static readonly Version Version = new Version("1.2.3");
+        public static readonly Version Version = new Version("1.2.4");
 
         // All local folders
         public static readonly string ApplicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
