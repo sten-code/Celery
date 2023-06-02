@@ -151,6 +151,8 @@ namespace Celery.Utils
             return oldProtect;
         }
 
+        #region Write
+
         public bool WriteByte(int address, byte value)
         {
             byte[] bytes = new byte[sizeof(byte)];
@@ -225,6 +227,10 @@ namespace Celery.Utils
         {
             return Imports.WriteProcessMemory(handle, address, BitConverter.GetBytes(value), sizeof(ulong), ref nothing);
         }
+
+        #endregion
+
+        #region Read
 
         public byte ReadByte(int address)
         {
@@ -365,6 +371,8 @@ namespace Celery.Utils
             Imports.ReadProcessMemory(handle, address, bytes, sizeof(ulong), ref nothing);
             return BitConverter.ToUInt64(bytes, 0);
         }
+
+        #endregion
 
         public void PlaceJmp(int from, int to)
         {

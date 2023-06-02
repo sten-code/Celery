@@ -1,4 +1,5 @@
 using Microsoft.Win32.SafeHandles;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -58,6 +59,10 @@ namespace Celery.CeleryAPI
             public uint Type;
         }
 
+        [DllImport("User32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        [DllImport("User32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", EntryPoint = "FindWindow")]
         public static extern int FindWindow(string sClass, string sWindow);
