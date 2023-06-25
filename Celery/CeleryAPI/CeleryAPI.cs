@@ -533,22 +533,34 @@ namespace Celery.CeleryAPI
         public void Execute(string script, bool notify = true)
         {
             List<ProcInfo> procs = ProcessUtil.OpenProcessesByName(Injector.InjectProcessName);
-            if (procs.Count <= 0 && notify)
+            if (procs.Count <= 0)
             {
-                Logger.Log("Roblox isn't opened, make sure you using the Roblox version from the Microsoft Store.");
+                if (!notify)
+                    return;
+
+                if (Process.GetProcessesByName("RobloxPlayerBeta").Length > 0)
+                {
+                    Logger.Log("You're using the web version of Roblox, Celery only works with the Roblox version from the Microsoft Store. Download Roblox from https://www.microsoft.com/store/productId/9NBLGGGZM6WM");
+                }
+                else
+                {
+                    Logger.Log("Roblox isn't opened.");
+                }
                 return;
             }
 
             List<ProcInfo> injectedProcs = procs.Where(p => Injector.IsInjected(p)).ToList();
-            if (injectedProcs.Count <= 0 && notify)
+            if (injectedProcs.Count <= 0)
             {
-                Logger.Log("Celery not attached.");
+                if (notify)
+                    Logger.Log("Celery not attached.");
                 return;
             }
 
-            if (script.Length <= 0 && notify)
+            if (script.Length <= 0)
             {
-                Logger.Log("Cannot execute empty script", true);
+                if (notify)
+                    Logger.Log("Cannot execute empty script", true);
                 return;
             }
 
