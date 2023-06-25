@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace Celery.CeleryAPI
 {
@@ -36,6 +35,8 @@ namespace Celery.CeleryAPI
                 {
                     int functionPtr = Imports.GetProcAddress(Imports.GetModuleHandle("USER32.dll"), "DrawIconEx");
 
+                    pinfo.WriteInt32(functionPtr + 0x1C, 1);
+
                     // This will enable output on the UI (if enabled in the DLL).
                     // My DLL relays signals to a location each time an output
                     // message is received via LogService.
@@ -49,6 +50,9 @@ namespace Celery.CeleryAPI
                     {
                         var ptr = pinfo.ReadInt32(functionPtr + 0x24);
                         var str = pinfo.ReadString(ptr, length);
+
+                        if (App.Instance.RedirectConsole)
+                            Logger.Log(str, false, (LoggingType)(type - 1));
 
                         //var oldProtect2 = pinfo.setPageProtect(functionPtr, 0x40, Imports.PAGE_READWRITE);
                         pinfo.WriteInt32(functionPtr + 0x20, 0);
@@ -526,34 +530,36 @@ namespace Celery.CeleryAPI
             }
         }
 
-        public void Execute(string script)
+        public void Execute(string script, bool notify = true)
         {
             List<ProcInfo> procs = ProcessUtil.OpenProcessesByName(Injector.InjectProcessName);
-            if (procs.Count <= 0)
+            if (procs.Count <= 0 && notify)
             {
                 Logger.Log("Roblox isn't opened, make sure you using the Roblox version from the Microsoft Store.");
                 return;
             }
 
             List<ProcInfo> injectedProcs = procs.Where(p => Injector.IsInjected(p)).ToList();
-            if (injectedProcs.Count <= 0)
+            if (injectedProcs.Count <= 0 && notify)
             {
                 Logger.Log("Celery not attached.");
                 return;
             }
 
-            if (script.Length <= 0)
+            if (script.Length <= 0 && notify)
             {
                 Logger.Log("Cannot execute empty script", true);
                 return;
             }
 
-            Logger.Log($"Executing...");
+            if (notify)
+                Logger.Log($"Executing...");
             foreach (ProcInfo pinfo in injectedProcs)
             {
                 Injector.SendScript(pinfo, script);
             }
-            Logger.Log($"Executed successfully!");
+            if (notify)
+                Logger.Log($"Executed successfully!");
         }
 
         public bool IsInjected()

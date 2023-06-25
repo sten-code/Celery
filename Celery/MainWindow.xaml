@@ -52,7 +52,13 @@
                         <RowDefinition Height="40"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <ListBox x:Name="ScriptList" Grid.Column="0" Grid.Row="3" Margin="5,5,0,5" SizeChanged="ScriptList_SizeChanged"/>
+                    <ListBox x:Name="ScriptList" Grid.Column="0" Grid.Row="3" Margin="5,5,0,5" SizeChanged="ScriptList_SizeChanged">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open folder location" Click="OpenScriptsFolder_Click"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                     <Grid x:Name="InsideGrid" Grid.Column="2" Grid.Row="3">
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -74,17 +80,26 @@
                                        VerticalAlignment="Center" 
                                        Foreground="{DynamicResource ForegroundBrush}"/>
                         </StackPanel>
-                        <TextBox x:Name="OutputBox" 
-                                 Grid.Row="1"
+                        <Border Grid.Row="1" Margin="6,25,6,6"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="4" Padding="2">
+                            <RichTextBox x:Name="OutputBox"
                                  Foreground="{DynamicResource ForegroundBrush}"
                                  Background="{DynamicResource BackgroundBrush}" 
-                                 Margin="6,25,6,6"
                                  IsReadOnly="True"
-                                 TextWrapping="WrapWithOverflow"
-                                 VerticalScrollBarVisibility="Hidden" />
+                                 BorderThickness="0"
+                                 VerticalScrollBarVisibility="Hidden">
+                                <RichTextBox.Resources>
+                                    <Style TargetType="{x:Type Paragraph}">
+                                        <Setter Property="Margin" Value="0"/>
+                                    </Style>
+                                </RichTextBox.Resources>
+                            </RichTextBox>
+                        </Border>
                     </Grid>
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="{DynamicResource LightBackgroundBrush}">
                         <Grid>
+
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                 <Path Data="{StaticResource CeleryLogo}" 
                                       Stretch="Uniform" Fill="{DynamicResource LogoBrush}"
@@ -94,6 +109,16 @@
                                            Foreground="{DynamicResource ForegroundBrush}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Width="30" Background="{DynamicResource LightBackgroundBrush}"
+                                        shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                        Click="DropDownMenu_Click" Style="{DynamicResource SquareButton}">
+                                    <Path Fill="{DynamicResource ForegroundBrush}"
+                                          Stretch="Uniform"
+                                          Width="13"
+                                          Data="M4 5C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H4ZM3 12C3 11.4477 3.44772 11 4 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13H4C3.44772 13 3 12.5523 3 12ZM3 18C3 17.4477 3.44772 17 4 17H20C20.5523 17 21 17.4477 21 18C21 18.5523 20.5523 19 20 19H4C3.44772 19 3 18.5523 3 18Z"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"/>
+                                </Button>
                                 <Button Width="40" Background="{DynamicResource LightBackgroundBrush}"
                                         shell:WindowChrome.IsHitTestVisibleInChrome="True"
                                         Click="MinimizeButton_Click" Style="{DynamicResource SquareButton}">
@@ -129,6 +154,9 @@
                                           Stroke="{DynamicResource ForegroundBrush}"
                                           StrokeThickness="1.5"
                                           Data="M678.3,297.4l-12.2-6.8c-1.9-1.1-2.8-1.6-3.7-2.1c-9.1-5.5-16.8-13-22.4-22c-0.6-0.9-1.1-1.9-2.2-3.7 c-1.1-1.9-1.6-2.8-2.1-3.8c-5-9.4-7.7-19.8-7.9-30.5c0-1.1,0-2.2,0-4.3L628,210c0.4-22.7,0.6-34.1-2.6-44.3 c-2.8-9.1-7.6-17.4-13.9-24.5c-7.1-8-17-13.7-36.9-25.1l-16.5-9.5c-19.8-11.4-29.6-17.1-40.1-19.3c-9.3-1.9-18.9-1.8-28.1,0.2 c-10.4,2.3-20.2,8.2-39.7,19.9l-0.1,0.1l-11.8,7.1c-1.9,1.1-2.8,1.7-3.7,2.2c-9.3,5.2-19.6,8-30.2,8.3c-1.1,0-2.2,0-4.3,0 c-2.2,0-3.3,0-4.4,0c-10.6-0.3-21-3.2-30.3-8.4c-0.9-0.5-1.9-1.1-3.7-2.2l-11.9-7.1c-19.6-11.8-29.5-17.7-40-20.1 c-9.3-2.1-18.9-2.1-28.2-0.2c-10.5,2.2-20.4,7.9-40.2,19.4l-0.1,0l-16.3,9.4l-0.2,0.1c-19.6,11.4-29.4,17.1-36.5,25.1 c-6.3,7.1-11,15.4-13.8,24.5c-3.2,10.2-3,21.6-2.6,44.4l0.2,14.2c0,2.1,0.1,3.2,0.1,4.3c-0.2,10.7-2.9,21.1-7.9,30.5 c-0.5,0.9-1,1.9-2.1,3.7c-1.1,1.9-1.6,2.8-2.1,3.7c-5.6,9.1-13.3,16.6-22.5,22.1c-0.9,0.5-1.9,1.1-3.7,2.1l-12.1,6.7 c-20.1,11.1-30.1,16.7-37.4,24.6c-6.5,7-11.3,15.3-14.3,24.4c-3.4,10.2-3.4,21.7-3.3,44.6l0,18.7c0.1,22.8,0.1,34.1,3.5,44.3 c3,9,7.8,17.2,14.2,24.2c7.3,7.9,17.2,13.4,37.1,24.5l11.9,6.6c2,1.1,3.1,1.7,4,2.3c9.1,5.5,16.7,13,22.3,22c0.6,1,1.2,2,2.3,4 c1.1,2,1.7,3,2.3,4c4.9,9.3,7.5,19.5,7.7,30c0,1.1,0,2.3,0,4.6l-0.2,13.6c-0.4,22.9-0.6,34.3,2.6,44.6c2.8,9.1,7.6,17.4,13.9,24.5 c7.2,8,17.1,13.7,36.9,25.1l16.5,9.5c19.8,11.4,29.6,17.1,40.1,19.2c9.3,1.9,18.9,1.8,28.1-0.2c10.5-2.3,20.2-8.2,39.8-19.9 l11.8-7.1c1.9-1.1,2.8-1.7,3.7-2.2c9.3-5.2,19.6-8,30.2-8.4c1.1,0,2.2,0,4.3,0c2.2,0,3.3,0,4.3,0c10.6,0.3,21,3.2,30.3,8.4 c0.8,0.5,1.6,1,3.1,1.8l12.5,7.5c19.6,11.8,29.5,17.7,40,20c9.3,2.1,18.9,2.2,28.2,0.2c10.5-2.2,20.4-7.9,40.2-19.4l16.5-9.6 c19.6-11.4,29.4-17.1,36.5-25.1c6.3-7.1,11-15.4,13.8-24.5c3.2-10.1,3-21.5,2.6-43.9l-0.2-14.7c0-2.1,0-3.2,0-4.3 c0.2-10.7,2.9-21.1,7.9-30.5c0.5-0.9,1-1.9,2.1-3.7c1.1-1.9,1.6-2.8,2.2-3.7c5.6-9.1,13.3-16.6,22.5-22.1c0.9-0.5,1.8-1,3.6-2.1 l0.1,0l12-6.7c20.1-11.1,30.1-16.7,37.4-24.6c6.5-7,11.3-15.3,14.3-24.3c3.3-10.2,3.3-21.6,3.3-44.2l0-19.1 c-0.1-22.8-0.1-34.1-3.4-44.3c-3-9-7.9-17.2-14.3-24.2C708.2,314,698.2,308.5,678.3,297.4L678.3,297.4z M298,400c0,56.3,45.7,102,102,102c56.3,0,102-45.7,102-102c0-56.3-45.7-102-102-102 C343.7,298,298,343.7,298,400z" />
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Settings"/>
+                                    </Button.ToolTip>
                                 </Button>
                                 <Button Background="{DynamicResource LightBackgroundBrush}" 
                                         Width="30" Margin="5,0,0,0"
@@ -138,6 +166,9 @@
                                           Fill="{DynamicResource ForegroundBrush}"
                                           Stroke="{DynamicResource LightBackgroundBrush}" StrokeThickness="0.3"
                                           Data="M75,36.984V25.742c1.985-1.154,3.333-3.28,3.333-5.742c0-3.683-2.984-6.667-6.666-6.667S65,16.317,65,20c0,2.462,1.348,4.588,3.333,5.742v11.242c-2.532,0.466-4.886,1.439-6.939,2.831L29.821,21.774C29.925,21.196,30,20.607,30,20c0-5.524-4.479-10-10-10s-10,4.476-10,10s4.479,10,10,10c2.493,0,4.739-0.944,6.491-2.451l30.013,17.148c-1.999,2.936-3.171,6.48-3.171,10.303c0,3.857,1.198,7.436,3.232,10.388L45.039,76.917c-2.22-0.589-4.681-0.039-6.419,1.703c-2.604,2.604-2.604,6.822,0,9.427c2.604,2.604,6.822,2.604,9.427,0c1.741-1.741,2.292-4.196,1.706-6.416l11.526-11.53c2.952,2.035,6.53,3.232,10.388,3.232C81.794,73.333,90,65.127,90,55C90,46.012,83.532,38.553,75,36.984z M71.667,66.667C65.222,66.667,60,61.445,60,55c0-6.444,5.222-11.667,11.667-11.667S83.333,48.556,83.333,55C83.333,61.445,78.112,66.667,71.667,66.667z" />
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Script Hub"/>
+                                    </Button.ToolTip>
                                 </Button>
                                 <Button Background="{DynamicResource LightBackgroundBrush}" 
                                         Width="30" Margin="5,0,0,0"
@@ -146,6 +177,9 @@
                                           Stretch="Uniform" 
                                           Fill="{DynamicResource ForegroundBrush}"
                                           Data="m12 3.75c-4.55635 0-8.25 3.69365-8.25 8.25 0 4.5563 3.69365 8.25 8.25 8.25 4.5563 0 8.25-3.6937 8.25-8.25 0-4.55635-3.6937-8.25-8.25-8.25zm-9.75 8.25c0-5.38478 4.36522-9.75 9.75-9.75 5.3848 0 9.75 4.36522 9.75 9.75 0 5.3848-4.3652 9.75-9.75 9.75-5.38478 0-9.75-4.3652-9.75-9.75zm9.75-.75c.4142 0 .75.3358.75.75v3.5c0 .4142-.3358.75-.75.75s-.75-.3358-.75-.75v-3.5c0-.4142.3358-.75.75-.75zm0-3.25c-.5523 0-1 .44772-1 1s.4477 1 1 1h.01c.5523 0 1-.44772 1-1s-.4477-1-1-1z" />
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Information"/>
+                                    </Button.ToolTip>
                                 </Button>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,5">
@@ -157,6 +191,9 @@
                                           Fill="{DynamicResource ForegroundBrush}"
                                           Stroke="{DynamicResource LightBackgroundBrush}" StrokeThickness="0.2"
                                           Data="M1 5C1 3.34315 2.34315 2 4 2H8.55848C9.84977 2 10.9962 2.82629 11.4045 4.05132L11.7208 5H20C21.1046 5 22 5.89543 22 7V9.00961C23.1475 9.12163 23.9808 10.196 23.7695 11.3578L22.1332 20.3578C21.9603 21.3087 21.132 22 20.1654 22H3C1.89543 22 1 21.1046 1 20V5ZM20 9V7H11.7208C10.8599 7 10.0956 6.44914 9.82339 5.63246L9.50716 4.68377C9.37105 4.27543 8.98891 4 8.55848 4H4C3.44772 4 3 4.44772 3 5V12.2709L3.35429 10.588C3.54913 9.66249 4.36562 9 5.31139 9H20ZM3.36634 20C3.41777 19.9109 3.4562 19.8122 3.47855 19.706L5.31139 11L21 11H21.8018L20.1654 20L3.36634 20Z"/>
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Open"/>
+                                    </Button.ToolTip>
                                 </Button>
                                 <Button Background="{DynamicResource LightBackgroundBrush}" HorizontalAlignment="Right"
                                         Width="30" Margin="0,0,5,0"
@@ -166,6 +203,9 @@
                                           Stroke="{DynamicResource ForegroundBrush}" 
                                           StrokeThickness="1.5" 
                                           Data="M17 21.0002L7 21M17 21.0002L17.8031 21C18.921 21 19.48 21 19.9074 20.7822C20.2837 20.5905 20.5905 20.2843 20.7822 19.908C21 19.4806 21 18.921 21 17.8031V9.21955C21 8.77072 21 8.54521 20.9521 8.33105C20.9095 8.14 20.8393 7.95652 20.7432 7.78595C20.6366 7.59674 20.487 7.43055 20.1929 7.10378L17.4377 4.04241C17.0969 3.66374 16.9242 3.47181 16.7168 3.33398C16.5303 3.21 16.3242 3.11858 16.1073 3.06287C15.8625 3 15.5998 3 15.075 3H6.2002C5.08009 3 4.51962 3 4.0918 3.21799C3.71547 3.40973 3.40973 3.71547 3.21799 4.0918C3 4.51962 3 5.08009 3 6.2002V17.8002C3 18.9203 3 19.4796 3.21799 19.9074C3.40973 20.2837 3.71547 20.5905 4.0918 20.7822C4.5192 21 5.07899 21 6.19691 21H7M17 21.0002V17.1969C17 16.079 17 15.5192 16.7822 15.0918C16.5905 14.7155 16.2837 14.4097 15.9074 14.218C15.4796 14 14.9203 14 13.8002 14H10.2002C9.08009 14 8.51962 14 8.0918 14.218C7.71547 14.4097 7.40973 14.7155 7.21799 15.0918C7 15.5196 7 16.0801 7 17.2002V21M15 7H9"/>
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Save"/>
+                                    </Button.ToolTip>
                                 </Button>
                                 <Button Background="{DynamicResource LightBackgroundBrush}" 
                                         Width="30" Margin="0,0,5,0"
@@ -174,6 +214,9 @@
                                           Stretch="Uniform" 
                                           Fill="{DynamicResource ForegroundBrush}" 
                                           Data="M485.625,7.281c-8.3-8.3-20.8-8.3-29.2,0l-144.2,142.3c-42.6-32.5-98.6-0.6-120.5,21.4l-131.3,131.3 c-13.6,13.6-45.7,60-12.5,98l7.2,7.4l-17.6,17.6l-2.1-2.1c-8.3-8.3-20.8-8.3-29.2,0c-8.3,8.3-8.3,20.8,0,29.2l32.3,32.3 c8.2,8.1,20.4,8.4,29.2,0c8.3-8.3,8.3-20.8,0-29.2l-1-1l17.2-17.3l6.7,6.9c37.6,31.3,81.3,5.2,98-11.5l132.3-132.4 c37.6-37.6,47-89.3,21.1-121.2l143.6-142.5C494.025,28.181,494.025,15.581,485.625,7.281z M298.725,265.081l-138.3,138.3 c-8.3,9.4-27.2,19.1-39.6,11.5l-43.8-43.8c-4.2-3.1-6.4-20.3,11.5-39.6l138.3-138.3c19.9-19.9,52.1-19.9,71.9,0 C318.625,213.081,318.625,245.281,298.725,265.081z"/>
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Inject"/>
+                                    </Button.ToolTip>
                                 </Button>
                                 <Button Background="{DynamicResource LightBackgroundBrush}" HorizontalAlignment="Right"
                                         Width="30" Margin="0,0,5,0"
@@ -183,11 +226,17 @@
                                           Stroke="{DynamicResource ForegroundBrush}" 
                                           StrokeThickness="1.5" 
                                           Data="M5 17.3336V6.66698C5 5.78742 5 5.34715 5.18509 5.08691C5.34664 4.85977 5.59564 4.71064 5.87207 4.67499C6.18868 4.63415 6.57701 4.84126 7.35254 5.25487L17.3525 10.5882L17.3562 10.5898C18.2132 11.0469 18.642 11.2756 18.7826 11.5803C18.9053 11.8462 18.9053 12.1531 18.7826 12.4189C18.6418 12.7241 18.212 12.9537 17.3525 13.4121L7.35254 18.7454C6.57645 19.1593 6.1888 19.3657 5.87207 19.3248C5.59564 19.2891 5.34664 19.1401 5.18509 18.9129C5 18.6527 5 18.2132 5 17.3336Z"/>
+                                    <Button.ToolTip>
+                                        <ToolTip Content="Execute"/>
+                                    </Button.ToolTip>
                                 </Button>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <settings:SettingsMenu x:Name="SettingsMenu" Grid.Row="3" Margin="0,0,175,0"/>
+
+                    <Border x:Name="SettingsBorder" Grid.Row="3" Margin="0,0,175,0" Background="{DynamicResource BackgroundBrush}" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}">
+                        <settings:SettingsMenu x:Name="SettingsMenu"/>
+                    </Border>
                     <GridSplitter Grid.Row="3" Grid.Column="0" Width="2" Background="Transparent"/>
                 </Grid>
             </Grid>

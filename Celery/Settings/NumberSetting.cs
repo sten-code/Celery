@@ -49,7 +49,7 @@ namespace Celery.Settings
             };
             Binding b = new Binding("Value");
             b.Source = slider;
-            b.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            b.UpdateSourceTrigger = UpdateSourceTrigger.LostFocus;
             numberBox.SetBinding(TextBox.TextProperty, b);
             slider.ValueChanged += Slider_ValueChanged;
             grid.Children.Add(slider);

@@ -19,6 +19,8 @@ using System.Windows.Media;
 using System.Threading.Tasks;
 using Celery.CeleryAPI;
 using System.Threading;
+using System.Windows.Media.Effects;
+using Microsoft.Web.WebView2.Wpf;
 
 namespace Celery
 {
@@ -30,6 +32,7 @@ namespace Celery
         private bool _saveTabs = true;
         private bool _autoAttach = false;
         public bool DebuggingMode = false;
+        public bool RedirectConsole = false;
 
         public Dictionary<string, ResourceDictionary> Themes;
 
@@ -151,6 +154,10 @@ namespace Celery
                     saveTimer.Stop();
                     saveTimer.Interval = new TimeSpan(0, 0, 0, (int)value, 0);
                     saveTimer.Start();
+                }),
+                new BooleanSetting("Redirect Console", "redirectconsole", false, (value) =>
+                {
+                    RedirectConsole = value;
                 })
             );
 
@@ -232,8 +239,98 @@ namespace Celery
             }
         }
 
+        public async Task<bool> PostFileUpdate(string url, string filename)
+        {
+            while (Injector.GetInjectedProcesses().Count > 0)
+            {
+                await MessageBoxUtils.ShowMessage("Close Roblox", "Roblox needs to be closed during an update, please close Roblox in order for the update to continue.", false, MessageBoxButtons.Ok);
+            }
+
+            try
+            {
+                using (Stream stream = await App.HttpClient.GetStreamAsync(url))
+                {
+                    using (FileStream fs = new FileStream(Path.Combine(Config.ApplicationPath, "dll", filename), FileMode.OpenOrCreate))
+                    {
+                        await stream.CopyToAsync(fs);
+                    }
+                }
+            } catch (Exception ex)
+            {
+                await MessageBoxUtils.ShowMessage("Error", $"An error occured while downloading '{filename}', Error: {ex.Message}", false, MessageBoxButtons.Ok);
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> ScheduleUpdateFile(string name)
+        {
+            string dllPath = Path.Combine(Config.ApplicationPath, "dll");
+
+            string verPath = Path.Combine(dllPath, name + "ver");
+            if (!File.Exists(verPath))
+            {
+                File.WriteAllText(verPath, "0.000");
+            }
+
+            bool shouldUpdate = !File.Exists(Path.Combine(dllPath, name + ".bin"));
+
+            // Get the latest version
+            string latestVersionStr = await App.HttpClient.GetStringAsync($"https://raw.githubusercontent.com/TheSeaweedMonster/Celery/main/Update/dll/{name}ver");
+            if (!float.TryParse(latestVersionStr, out float latestVersion))
+            {
+                await MessageBoxUtils.ShowMessage("Error", $"Couldn't convert {latestVersionStr} to a float. Please notify a developer of this.", true, MessageBoxButtons.Ok);
+                return false;
+            }
+
+            // Get the current version
+            string currentVersionStr = File.ReadAllText(verPath);
+            if (!float.TryParse(currentVersionStr, out float currentVersion))
+            {
+                await MessageBoxUtils.ShowMessage("Error", $"Couldn't convert {currentVersionStr} from 'dll/{name}ver' to a float.", true, MessageBoxButtons.Ok);
+                return false;
+            }
+
+            if (latestVersion > currentVersion)
+                shouldUpdate = true;
+
+            if (shouldUpdate)
+            {
+                if (!await PostFileUpdate($"https://raw.githubusercontent.com/TheSeaweedMonster/Celery/main/Update/dll/{name}.bin", name + ".bin"))
+                    return false;
+                File.WriteAllText(verPath, latestVersionStr);
+                return true;
+            }
+
+            return false;
+        }
+
+        public async void CheckAPIUpdates()
+        {
+            string dllPath = Path.Combine(Config.ApplicationPath, "dll");
+            if (!Directory.Exists(dllPath))
+            {
+                Directory.CreateDirectory(dllPath);
+            }
+
+            bool updated = false;
+            if (await ScheduleUpdateFile("celeryuwp"))
+                updated = true;
+            if (await ScheduleUpdateFile("uwpoff"))
+                updated = true;
+
+            if (updated)
+            {
+                await MessageBoxUtils.ShowMessage("Update", "The Celery API has been updated.", false, MessageBoxButtons.Ok);
+            }
+        }
+
         public async void CheckUpdates()
         {
+            CheckAPIUpdates();
+
+            // Check for UI updates
             Dictionary<string, object> latest;
             Version latestVersion;
             try
@@ -244,7 +341,7 @@ namespace Celery
             }
             catch
             {
-                await MessageBoxUtils.ShowMessage("Error", "Couldn't check for updates", true, MessageBoxButtons.Ok);
+                await MessageBoxUtils.ShowMessage("Error", "Couldn't contact the GitHub API to check for updates", true, MessageBoxButtons.Ok);
                 return;
             }
 
@@ -282,6 +379,7 @@ namespace Celery
 
         private ListBoxItem CreateScriptItem(string header)
         {
+            // The open script button
             MenuItem open = new MenuItem
             {
                 Header = "Open"
@@ -291,6 +389,17 @@ namespace Celery
                 string name = ((ListBoxItem)((ContextMenu)open.Parent).PlacementTarget).Content.ToString();
                 Tabs.MakeTab(File.ReadAllText(Path.Combine(Config.ScriptsPath, name)), Path.GetFileNameWithoutExtension(Path.Combine(Config.ScriptsPath, name)));
             };
+
+            MenuItem execute = new MenuItem
+            {
+                Header = "Execute"
+            };
+            execute.Click += (s, e) =>
+            {
+                string name = ((ListBoxItem)((ContextMenu)open.Parent).PlacementTarget).Content.ToString();
+                Celery.Execute(File.ReadAllText(Path.Combine(Config.ScriptsPath, name)));
+            };
+
             ListBoxItem item = new ListBoxItem
             {
                 Content = header,
@@ -298,7 +407,8 @@ namespace Celery
                 {
                     Items =
                     {
-                        open
+                        open,
+                        execute
                     }
                 }
             };
@@ -318,12 +428,16 @@ namespace Celery
             FileSystemWatcher watcher = new FileSystemWatcher(Config.ScriptsPath)
             {
                 NotifyFilter = NotifyFilters.FileName,
-                Filter = "*.lua",
                 IncludeSubdirectories = false,
                 EnableRaisingEvents = true
             };
+
             watcher.Created += (s, e) =>
             {
+                string extension = Path.GetExtension(e.FullPath);
+                if (extension != ".txt" && extension != ".lua")
+                    return;
+
                 Dispatcher.Invoke(() =>
                 {
                     ScriptList.Items.Add(CreateScriptItem(Path.GetFileName(e.FullPath)));
@@ -332,6 +446,10 @@ namespace Celery
             };
             watcher.Deleted += (s, e) =>
             {
+                string extension = Path.GetExtension(e.FullPath);
+                if (extension != ".txt" && extension != ".lua")
+                    return;
+
                 Dispatcher.Invoke(() =>
                 {
                     for (int i = ScriptList.Items.Count - 1; i >= 0; --i)
@@ -346,6 +464,10 @@ namespace Celery
             };
             watcher.Renamed += (s, e) =>
             {
+                string extension = Path.GetExtension(e.FullPath);
+                if (extension != ".txt" && extension != ".lua")
+                    return;
+
                 Dispatcher.Invoke(() =>
                 {
                     for (int i = ScriptList.Items.Count - 1; i >= 0; --i)
@@ -423,14 +545,6 @@ namespace Celery
             }
         }
 
-        public TextBox Console
-        {
-            get
-            {
-                return OutputBox;
-            }
-        }
-
         private void InjectButton_Click(object sender, RoutedEventArgs e)
         {
             Celery.Inject();
@@ -443,11 +557,11 @@ namespace Celery
             SettingsVisible = !SettingsVisible;
             if (SettingsVisible)
             {
-                AnimationUtils.AnimateMargin(SettingsMenu, SettingsMenu.Margin, new Thickness(), AnimationUtils.EaseInOut);
+                AnimationUtils.AnimateMargin(SettingsBorder, SettingsBorder.Margin, new Thickness(), AnimationUtils.EaseInOut);
             }
             else
             {
-                AnimationUtils.AnimateMargin(SettingsMenu, SettingsMenu.Margin, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut);
+                AnimationUtils.AnimateMargin(SettingsBorder, SettingsBorder.Margin, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut);
             }
         }
 
@@ -455,7 +569,7 @@ namespace Celery
         {
             // For some reason when you apply an animation to something you can't change that particular property anymore, the only way to change that property is with an animation
             if (!SettingsVisible)
-                AnimationUtils.AnimateMargin(SettingsMenu, SettingsMenu.Margin, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut, 0);
+                AnimationUtils.AnimateMargin(SettingsBorder, SettingsBorder.Margin, new Thickness(0, 0, MainGrid.ColumnDefinitions[0].Width.Value, 0), AnimationUtils.EaseInOut, 0);
         }
 
         private bool ScriptHubVisible = false;
@@ -527,6 +641,47 @@ namespace Celery
         private async void OpenInfoButton_Click(object sender, RoutedEventArgs e)
         {
             await MessageBoxUtils.ShowMessage("About", new AboutPage(), true, MessageBoxButtons.None, 500, 350);
+        }
+
+        private void OpenScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(Config.ScriptsPath);
+        }
+
+        public async void ResetBlur(Border border, UIElement toDisable, DropDownMenu self)
+        {
+            BlurGrid.Effect = null;
+            await Task.Delay(300);
+            if (toDisable != null)
+                toDisable.Visibility = Visibility.Visible;
+            //await Task.Delay(200);
+            BaseGrid.Children.Remove(border);
+            BaseGrid.Children.Remove(self);
+        }
+
+        private void DropDownMenu_Click(object sender, RoutedEventArgs e)
+        {
+            // Blur background
+            BlurGrid.Effect = new BlurEffect
+            {
+                Radius = 10,
+                KernelType = KernelType.Gaussian
+            };
+            WebView2 toDisable = (WebView2)Tabs.SelectedContent;
+            if (toDisable != null)
+                toDisable.Visibility = Visibility.Hidden;
+
+            // Block input to main window
+            Border border = new Border
+            {
+                Background = new SolidColorBrush(Colors.Transparent)
+            };
+            BaseGrid.Children.Add(border);
+
+            // Show menu
+            DropDownMenu menu = new DropDownMenu(border, toDisable);
+            BaseGrid.Children.Add(menu);
+
         }
     }
 }

@@ -1,5 +1,11 @@
-﻿using System.Net.Http;
+﻿using Celery.Controls;
+using Celery.GitHub;
+using Celery.Utils;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -9,6 +15,7 @@ namespace Celery
     {
         public static MainWindow Instance { get; set; }
         public static HttpClient HttpClient { get; private set; }
+        public static List<AnnouncementBox> Anouncements { get; private set; }
 
         private async void App_Startup(object sender, StartupEventArgs e)
         {
@@ -28,6 +35,26 @@ namespace Celery
                 await Task.Delay(3500);
             }
             Instance.Show();
+
+            Anouncements = new List<AnnouncementBox>();
+            new Thread(async () =>
+            {
+                try
+                {
+                    string response = await HttpClient.GetStringAsync("https://api.github.com/repos/sten-code/Celery/releases");
+                    List<Release> releases = response.FromJson<List<Release>>();
+                    foreach (Release release in releases)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            Anouncements.Add(new AnnouncementBox(release.body, AnnouncementType.Update));
+                        });
+                    }
+                } catch (HttpRequestException)
+                {
+
+                }
+            }).Start();
         }
     }
 }

@@ -16,7 +16,7 @@
                             <Setter TargetName="rectangle" Property="Background" Value="{DynamicResource LightBorderBrush}"/>
                         </Trigger>
                         <Trigger Property="Thumb.IsDragging" Value="True">
-                            <Setter TargetName="rectangle" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                            <Setter TargetName="rectangle" Property="Background" Value="{DynamicResource BorderBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

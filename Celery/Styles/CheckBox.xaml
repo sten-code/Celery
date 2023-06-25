@@ -12,7 +12,6 @@
                         <BulletDecorator.Bullet>
                             <Border x:Name="Border"
                                     Width="20" Height="20"
-                                    Background="{DynamicResource BackgroundBrush}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="4">

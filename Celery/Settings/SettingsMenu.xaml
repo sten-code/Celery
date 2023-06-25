@@ -6,9 +6,7 @@
              xmlns:local="clr-namespace:Celery.Settings"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="150" Background="Transparent">
-    <Border Background="{DynamicResource BackgroundBrush}" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
-            <StackPanel x:Name="SettingsPanel" Orientation="Vertical"/>
-        </ScrollViewer>
-    </Border>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
+        <StackPanel x:Name="SettingsPanel" Orientation="Vertical"/>
+    </ScrollViewer>
 </UserControl>

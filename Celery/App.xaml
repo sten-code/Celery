@@ -21,6 +21,7 @@
                 <ResourceDictionary Source="/Styles/Slider.xaml"/>
                 <ResourceDictionary Source="/Styles/Tabs.xaml"/>
                 <ResourceDictionary Source="/Styles/TextBox.xaml"/>
+                <ResourceDictionary Source="/Styles/ToolTip.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

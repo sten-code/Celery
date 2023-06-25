@@ -56,14 +56,15 @@ namespace Celery.Utils
             MessageBoxResult result = MessageBoxResult.None;
             box.MessageBoxClosing += async (s, e) =>
             {
-                result = e.Result;
                 App.Instance.BlurGrid.Effect = null;
-                App.Instance.BaseGrid.Children.Remove(border);
                 AnimationUtils.AnimateMargin(box, new System.Windows.Thickness(), new System.Windows.Thickness(0, -height * 1.5 - App.Instance.ActualHeight, 0, 0), AnimationUtils.EaseOut, 500);
-                await Task.Delay(500);
-                App.Instance.BaseGrid.Children.Remove(box);
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(border);
                 if (toDisable != null)
                     toDisable.Visibility = System.Windows.Visibility.Visible;
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(box);
+                result = e.Result;
             };
             AnimationUtils.AnimateMargin(box, new System.Windows.Thickness(0, -height * 1.5 - App.Instance.ActualHeight, 0, 0), new System.Windows.Thickness(), AnimationUtils.EaseOut, 500);
             App.Instance.BaseGrid.Children.Add(border);
@@ -104,15 +105,16 @@ namespace Celery.Utils
             string input = "";
             box.MessageBoxClosing += async (s, e) =>
             {
-                result = e.Result;
                 input = box.InputBox.Text;
                 App.Instance.BlurGrid.Effect = null;
-                App.Instance.BaseGrid.Children.Remove(border);
                 AnimationUtils.AnimateMargin(box, new System.Windows.Thickness(), new System.Windows.Thickness(0, -height * 1.5 - App.Instance.ActualHeight, 0, 0), AnimationUtils.EaseOut, 500);
-                await Task.Delay(500);
-                App.Instance.BaseGrid.Children.Remove(box);
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(border);
                 if (toDisable != null)
                     toDisable.Visibility = System.Windows.Visibility.Visible;
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(box);
+                result = e.Result;
             };
 
             AnimationUtils.AnimateMargin(box, new System.Windows.Thickness(0, -height * 1.5 - App.Instance.ActualHeight, 0, 0), new System.Windows.Thickness(), AnimationUtils.EaseOut, 500);
@@ -171,14 +173,15 @@ namespace Celery.Utils
             MessageBoxResult result = MessageBoxResult.None;
             box.MessageBoxClosing += async (s, e) =>
             {
-                result = e.Result;
                 App.Instance.BlurGrid.Effect = null;
-                App.Instance.BaseGrid.Children.Remove(border);
                 AnimationUtils.AnimateMargin(box, new System.Windows.Thickness(), new System.Windows.Thickness(0, -height * 1.5 - App.Instance.ActualHeight, 0, 0), AnimationUtils.EaseOut, 500);
-                await Task.Delay(500);
-                App.Instance.BaseGrid.Children.Remove(box);
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(border);
                 if (toDisable != null)
                     toDisable.Visibility = System.Windows.Visibility.Visible;
+                await Task.Delay(250);
+                App.Instance.BaseGrid.Children.Remove(box);
+                result = e.Result;
             };
             App.Instance.BaseGrid.Children.Add(border);
             App.Instance.BaseGrid.Children.Add(box);
