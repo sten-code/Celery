@@ -194,12 +194,12 @@ namespace Celery.Utils
             {
                 if (value.Contains("."))
                 {
-                    if (double.TryParse(value, out double num)) return num;
+                    if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double num)) return num;
                     else return null;
                 }
                 else
                 {
-                    if (int.TryParse(value, out int num)) return num;
+                    if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int num)) return num;
                     else return null;
                 }
             }

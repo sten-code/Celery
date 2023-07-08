@@ -21,6 +21,7 @@ using Celery.CeleryAPI;
 using System.Threading;
 using System.Windows.Media.Effects;
 using Microsoft.Web.WebView2.Wpf;
+using System.Globalization;
 
 namespace Celery
 {
@@ -277,8 +278,13 @@ namespace Celery
             bool shouldUpdate = !File.Exists(Path.Combine(dllPath, name + ".bin"));
 
             // Get the latest version
-            string latestVersionStr = await App.HttpClient.GetStringAsync($"https://raw.githubusercontent.com/TheSeaweedMonster/Celery/main/Update/dll/{name}ver");
-            if (!float.TryParse(latestVersionStr, out float latestVersion))
+            string latestVersionStr = (await App.HttpClient.GetStringAsync($"https://raw.githubusercontent.com/TheSeaweedMonster/Celery/main/Update/dll/{name}ver")).Trim();
+            float latestVersion;
+            try
+            {
+                latestVersion = Convert.ToSingle(latestVersionStr, CultureInfo.InvariantCulture);
+            }
+            catch
             {
                 await MessageBoxUtils.ShowMessage("Error", $"Couldn't convert {latestVersionStr} to a float. Please notify a developer of this.", true, MessageBoxButtons.Ok);
                 return false;
@@ -286,7 +292,12 @@ namespace Celery
 
             // Get the current version
             string currentVersionStr = File.ReadAllText(verPath);
-            if (!float.TryParse(currentVersionStr, out float currentVersion))
+            float currentVersion;
+            try
+            {
+                currentVersion = Convert.ToSingle(currentVersionStr, CultureInfo.InvariantCulture);
+            }
+            catch
             {
                 await MessageBoxUtils.ShowMessage("Error", $"Couldn't convert {currentVersionStr} from 'dll/{name}ver' to a float.", true, MessageBoxButtons.Ok);
                 return false;
