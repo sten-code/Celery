@@ -124,7 +124,13 @@
   <data name="CeleryUpdater" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CeleryUpdater.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="dll" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\dll.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="DefaultMonacoTheme" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Default.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="lsp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\lsp.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Monaco" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Monaco.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

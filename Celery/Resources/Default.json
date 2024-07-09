@@ -1,0 +1,23 @@
+{
+	"base": "vs-dark",
+	"inherit": true,
+	"rules": [
+		{
+			"background": "191919",
+			"token": ""
+		},
+		{
+			"foreground": "f3fcf4",
+			"token": "text"
+		},
+		{
+			"foreground": "a6e3a1",
+			"token": "string"
+		}
+	],
+	"colors": {
+		"editor.background": "#191919",
+		"editor.lineHighlightBackground": "#252525",
+		"editorIndentGuide.activeBackground": "#333333"
+	}
+}

@@ -1,0 +1,20 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="BackgroundColor">#181825</Color>
+    <Color x:Key="LightBackgroundColor">#1e1e2e</Color>
+    <Color x:Key="HighlightColor">#313244</Color>
+    <Color x:Key="BorderColor">#45475a</Color>
+    <Color x:Key="LightBorderColor">#585b70</Color>
+    <Color x:Key="DarkForegroundColor">#bac2de</Color>
+    <Color x:Key="ForegroundColor">#cdd6f4</Color>
+    <Color x:Key="LogoColor">#a6e3a1</Color>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+    <SolidColorBrush x:Key="LightBackgroundBrush" Color="{StaticResource LightBackgroundColor}"/>
+    <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="LightBorderBrush" Color="{StaticResource LightBorderColor}"/>
+    <SolidColorBrush x:Key="DarkForegroundBrush" Color="{StaticResource DarkForegroundColor}"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
+    <SolidColorBrush x:Key="LogoBrush" Color="{StaticResource LogoColor}"/>
+</ResourceDictionary>

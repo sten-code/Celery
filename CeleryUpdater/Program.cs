@@ -2,66 +2,86 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace CeleryUpdater
 {
-    public class Program
+    public static class Program
     {
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern int MessageBox(int hWnd, string text, string caption, uint type);
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
-            IntPtr handle = GetConsoleWindow();
-            ShowWindow(handle, 0); // 0 = hide, 5 = show
-
-            if (args.Length != 3)
+            if (args.Length != 2)
             {
-                MessageBox(0, $"{args.Length} arguments given, 3 are required.", "Error",  0x10);
+                Console.WriteLine($"{args.Length} arguments given, 2 were expected.");
                 return;
             }
 
             string downloadUrl = args[0];
             string downloadPath = args[1];
-            string downloadFileName = downloadPath + "\\files.zip";
-            if (!int.TryParse(args[2], out int processId))
+            string[] whitelistedDirs =
+            [
+                "scripts"
+            ];
+
+            // The directory isn't immediately after accessible after killing the program so just try to delete it until its allowed
+            while (Directory.GetDirectories(downloadPath).Length != whitelistedDirs.Length || Directory.GetFiles(downloadPath).Length != 0)
             {
-                MessageBox(0, $"Process ID: {args[2]} has to be a valid int", "Error", 0x10);
-                return;
+                try
+                {
+                    foreach (string dir in Directory.GetDirectories(downloadPath))
+                        if (!whitelistedDirs.Contains(Path.GetFileName(dir)))
+                            Directory.Delete(dir, true);
+                    foreach (string file in Directory.GetFiles(downloadPath)) File.Delete(file);
+                }
+                catch { }
             }
 
-            try
-            {
-                Process.GetProcessById(processId).Kill();
+            Console.Clear();
+            Console.WriteLine("Downloading...");
+            IProgress<double> downloadBar = new ProgressBar();
+            using HttpClient client = new();
+            using MemoryStream memStream = new(8000000); // 8MB
+            await client.DownloadAsync(downloadUrl, memStream, downloadBar);
+            memStream.Position = 0;
 
-                // The directory isn't immediately after accessible after killing the program so just try to delete it until its allowed
-                while (Directory.GetDirectories(downloadPath).Length != 0 || Directory.GetFiles(downloadPath).Length != 0)
+            Console.Clear();
+            Console.WriteLine("Extracting...");
+            IProgress<double> extractBar = new ProgressBar();
+            await Task.Run(() =>
+            {
+                // Extract the zip to the targeted location
+                using ZipArchive archive = new(memStream);
+
+                for (int i = 0; i < archive.Entries.Count; i++)
                 {
+                    ZipArchiveEntry entry = archive.Entries[i];
+                    string fileName = Path.Combine(downloadPath, entry.FullName);
+                    if (entry.Name == "")
+                    {
+                        Directory.CreateDirectory(fileName);
+                        continue;
+                    }
+
+                    float progress = (float)i / archive.Entries.Count;
+                    extractBar.Report(progress);
                     try
                     {
-                        foreach (string dir in Directory.GetDirectories(downloadPath)) Directory.Delete(dir, true);
-                        foreach (string file in Directory.GetFiles(downloadPath)) File.Delete(file);
+                        entry.ExtractToFile(fileName, true);
                     }
                     catch { }
                 }
-
-                new WebClient().DownloadFile(downloadUrl, downloadFileName);
-                ZipFile.ExtractToDirectory(downloadFileName, downloadPath);
-                File.Delete(downloadFileName);
-                Process.Start(downloadPath + "\\Celery.exe");
-            }
-            catch (Exception ex)
+            });
+            new Process
             {
-                MessageBox(0, ex.Message.ToString(), "Error", 0x10);
-            }
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = downloadPath,
+                    FileName = Path.Combine(downloadPath, "Celery.exe")
+                }
+            }.Start();
+            Environment.Exit(0);
         }
 
     }

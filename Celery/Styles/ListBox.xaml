@@ -13,7 +13,7 @@
                             CornerRadius="5"
                             BorderThickness="{TemplateBinding BorderThickness}" 
                             BorderBrush="{TemplateBinding BorderBrush}">
-                        <ScrollViewer Focusable="false" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden" CanContentScroll="True" >
+                        <ScrollViewer Focusable="false" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden" >
                             <StackPanel IsItemsHost="True" />
                         </ScrollViewer>
                     </Border>
@@ -29,16 +29,19 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="Margin" Value="0,0,0,4"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ListBoxItem">
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
                     <Border Name="Border"
-                            Padding="5"
+                            Padding="5,0,5,0"
+                            Height="23"
                             Background="{TemplateBinding Background}" 
                             CornerRadius="5"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="{TemplateBinding BorderBrush}">
-                        <ContentPresenter/>
+                        <ContentPresenter HorizontalAlignment="Stretch" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="true">

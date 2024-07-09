@@ -1,48 +1,47 @@
 ﻿using System;
-using System.Windows.Controls;
-using System.Windows;
+using System.Windows.Input;
+using Celery.Core;
 
 namespace Celery.Settings
 {
     public class BooleanSetting : Setting
     {
-        public bool Value { get; private set; }
-        public Action<bool> OnChangeEvent { get; private set; }
+        private bool _value { get; set; }
 
-        public BooleanSetting(string name, string identifier, bool value, Action<bool> onChange = null) : base(name, identifier)
+        public bool Value
         {
-            OnChangeEvent = onChange;
-            Value = GetValue(value);
-            if (OnChangeEvent != null)
-                OnChangeEvent(Value);
-        }
-
-        public override Grid GetComponent()
-        {
-            Grid grid = base.GetComponent();
-            CheckBox checkBox = new CheckBox
+            get => _value;
+            set
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Bottom,
-                Margin = new Thickness(5,5,0,5),
-                IsChecked = Value
-            };
-            checkBox.Checked += CheckBox_CheckedChanged;
-            checkBox.Unchecked += CheckBox_CheckedChanged;
-            grid.Children.Add(checkBox);
-            return grid;
+                _value = value;
+                OnPropertyChanged();
+            }
         }
 
-        private void CheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        public ICommand CheckedCommand { get; }
+
+        private Action<BooleanSetting, bool> OnChanged { get; }
+
+        public BooleanSetting(string name, string id, bool value, Action<BooleanSetting, bool> onChanged) : base(name, id)
         {
-            CheckBox checkBox = (CheckBox)sender;
-            Value = checkBox.IsChecked.GetValueOrDefault();
-            if (OnChangeEvent != null)
-                OnChangeEvent(Value);
-
-            if (SettingsSaveManager.Instance != null)
-                SettingsSaveManager.Instance.Save(Identifier, Value);
+            Value = value;
+            OnChanged = onChanged;
+            CheckedCommand = new RelayCommand(o =>
+            {
+                if (OnChanged != null)
+                    OnChanged(this, Value);
+            }, o => true);
         }
 
+        public override object GetValue()
+        {
+            return Value;
+        }
+
+        public override void SetValue(object value)
+        {
+            if (value is bool b)
+                Value = b;
+        }
     }
 }

@@ -7,12 +7,16 @@ namespace Celery
     public static class Config
     {
         // Version template: <release type (alpha | beta | release)>.<standard update>.<bug fixes/small changes>
-        public static readonly Version Version = new Version("1.2.6");
+        public static readonly Version Version = new Version("2.0.0");
 
         // All local folders
         public static readonly string ApplicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        public static readonly string ScriptsPath = Path.Combine(ApplicationPath, "Scripts");
+        public static readonly string InjectorPath = Path.Combine(ApplicationPath, "CeleryInject.exe");
+        public static readonly string ScriptsPath = Path.Combine(ApplicationPath, "scripts");
         public static readonly string BinPath = Path.Combine(ApplicationPath, "bin");
+        public static readonly string AcePath = Path.Combine(BinPath, "Ace");
+        public static readonly string MonacoPath = Path.Combine(BinPath, "Monaco");
+        public static readonly string LspPath = Path.Combine(BinPath, "lsp");
 
         // All files and folders inside the %appdata%\Celery folder
         public static readonly string CeleryAppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Celery");
@@ -23,7 +27,16 @@ namespace Celery
 
         // All files inside the %temp%\celery folder
         public static readonly string CeleryTempPath = Path.Combine(Path.GetTempPath(), "celery");
-        public static readonly string CeleryHome = Path.Combine(CeleryTempPath, "celeryhome.txt");
-        public static readonly string CeleryDir = Path.Combine(CeleryTempPath, "celerydir.txt");
+        public static readonly string CeleryScriptFile = Path.Combine(CeleryTempPath, "myfile.txt");
+
+        // Urls
+        public static readonly string GitHubUrl = "https://api.github.com/repos/sten-code/Celery";
+        public static readonly string GitHubReleasesUrl = $"{GitHubUrl}/releases";
+        public static readonly string GitHubLatestReleaseUrl = $"{GitHubReleasesUrl}/latest";
+
+        public static readonly byte[] Ace = Properties.Resources.Ace;
+        public static readonly byte[] CeleryUpdater = Properties.Resources.CeleryUpdater;
+        public static readonly byte[] Monaco = Properties.Resources.Monaco;
+        public static readonly byte[] Lsp = Properties.Resources.lsp;
     }
 }

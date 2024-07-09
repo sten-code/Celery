@@ -1,7 +1,7 @@
-﻿using System.Windows.Media.Animation;
-using System.Windows;
-using System;
+﻿using System;
+using System.Windows.Media.Animation;
 using System.Windows.Media;
+using System.Windows;
 
 namespace Celery.Utils
 {
@@ -22,7 +22,7 @@ namespace Celery.Utils
         {
             EasingMode = EasingMode.EaseOut
         };
-        
+
         public static void AnimateMargin(DependencyObject obj, Thickness get, Thickness set, IEasingFunction easing, int duration = 500)
         {
             AnimateThicknessProperty(obj, get, set, FrameworkElement.MarginProperty, easing, duration);

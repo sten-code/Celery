@@ -83,9 +83,29 @@ namespace Celery.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] dll {
+        internal static byte[] DefaultMonacoTheme {
             get {
-                object obj = ResourceManager.GetObject("dll", resourceCulture);
+                object obj = ResourceManager.GetObject("DefaultMonacoTheme", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] lsp {
+            get {
+                object obj = ResourceManager.GetObject("lsp", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Monaco {
+            get {
+                object obj = ResourceManager.GetObject("Monaco", resourceCulture);
                 return ((byte[])(obj));
             }
         }

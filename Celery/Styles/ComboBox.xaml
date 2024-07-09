@@ -8,13 +8,16 @@
         <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
         <Setter Property="MinHeight" Value="20"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource LightBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
-                    <Grid>
-                        <ToggleButton x:Name="ToggleButton" 
-                                      Grid.Column="2" 
+                    <Grid x:Name="BaseGrid">
+                        <ToggleButton x:Name="ToggleButton"
                                       Focusable="false"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
                                       IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                       ClickMode="Press">
                             <ToggleButton.Template>
@@ -27,14 +30,14 @@
                                         <Border x:Name="Border" 
                                                 Grid.ColumnSpan="2"
                                                 CornerRadius="3"
-                                                Background="{DynamicResource BackgroundBrush}"
-                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="1" />
                                         <Border Grid.Column="0"
                                                 CornerRadius="3,0,0,3" 
                                                 Margin="1" 
-                                                Background="{DynamicResource BackgroundBrush}" 
-                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="0,0,1,0" />
                                         <Path x:Name="Arrow"
                                               Grid.Column="1"     
@@ -60,8 +63,8 @@
                                  VerticalAlignment="Center" 
                                  Margin="3,3,23,3"
                                  Focusable="True" 
-                                 Background="{DynamicResource BackgroundBrush}"
-                                 Foreground="{DynamicResource ForegroundBrush}"
+                                 Background="{TemplateBinding Background}"
+                                 Foreground="{TemplateBinding Foreground}"
                                  Visibility="Hidden"
                                  IsReadOnly="{TemplateBinding IsReadOnly}">
                             <TextBox.Template>
@@ -80,8 +83,8 @@
                                   MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder"
                                         CornerRadius="4"
-                                        Background="{DynamicResource BackgroundBrush}"
-                                        BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                                        Background="{TemplateBinding Background}"
+                                        BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}"/>
                                 <ScrollViewer Margin="3,5,3,3" SnapsToDevicePixels="True">
                                     <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
@@ -89,6 +92,9 @@
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+                        </Trigger>
                         <Trigger Property="HasItems" Value="false">
                             <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
                         </Trigger>
@@ -111,8 +117,6 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-        </Style.Triggers>
     </Style>
 
     <Style TargetType="{x:Type ComboBoxItem}">

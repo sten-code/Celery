@@ -5,32 +5,38 @@
         <Setter Property="OverridesDefaultStyle" Value="true" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type CheckBox}">
-                    <BulletDecorator Background="Transparent">
-                        <BulletDecorator.Bullet>
-                            <Border x:Name="Border"
-                                    Width="20" Height="20"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="4">
-                                <Path x:Name="CheckMark"
-                                      Width="12"  Height="12"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      Data="M6 12L10.2426 16.2426L18.727 7.75732"
-                                      Stretch="Uniform"
-                                      Stroke="{DynamicResource ForegroundBrush}"
-                                      StrokeEndLineCap="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeThickness="2" />
-                            </Border>
-                        </BulletDecorator.Bullet>
-                        <ContentPresenter Margin="4,0,0,0"
+                    <Grid>
+                        <ContentPresenter Margin="4,0,5,0"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
                                           RecognizesAccessKey="True" />
-                    </BulletDecorator>
+                        <BulletDecorator Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="Border"
+                                        Width="20" Height="20"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <Path x:Name="CheckMark"
+                                            Width="12"  Height="12"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Data="M6 12L10.2426 16.2426L18.727 7.75732"
+                                            Stretch="Uniform"
+                                            Stroke="{DynamicResource ForegroundBrush}"
+                                            StrokeEndLineCap="Round"
+                                            StrokeStartLineCap="Round"
+                                            StrokeThickness="2" />
+                                </Border>
+                            </BulletDecorator.Bullet>
+                        </BulletDecorator>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="false">
                             <Trigger.EnterActions>

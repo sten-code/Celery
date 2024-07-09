@@ -1,60 +1,281 @@
-﻿using Celery.Controls;
-using Celery.GitHub;
-using Celery.Utils;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Security.Authentication;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Celery.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
+using CefSharp;
+using CefSharp.Wpf;
+using Celery.Controls;
+using Celery.Services;
+using Celery.Settings;
 
 namespace Celery
 {
-    public partial class App : Application
+    public partial class App
     {
-        public static MainWindow Instance { get; set; }
-        public static HttpClient HttpClient { get; private set; }
-        public static List<AnnouncementBox> Anouncements { get; private set; }
+        public static ServiceProvider ServiceProvider;
+        public static int MonacoPort;
+        public static Process LspProcess;
 
-        private async void App_Startup(object sender, StartupEventArgs e)
+        static Process GetProcess(string exePath)
         {
-            HttpClient = new HttpClient(new HttpClientHandler()
-            {
-                SslProtocols = SslProtocols.Tls12,
-                UseCookies = false,
-                UseProxy = false
-            });
-            HttpClient.DefaultRequestHeaders.Add("User-Agent", "Celery");
-
-            Instance = new MainWindow();
-            if (Instance.StartupAnimation)
-            {
-                Startup startup = new Startup();
-                startup.Show();
-                await Task.Delay(3500);
-            }
-            Instance.Show();
-
-            Anouncements = new List<AnnouncementBox>();
-            new Thread(async () =>
+            string exeName = Path.GetFileNameWithoutExtension(exePath);
+            foreach (Process process in Process.GetProcessesByName(exeName))
             {
                 try
                 {
-                    string response = await HttpClient.GetStringAsync("https://api.github.com/repos/sten-code/Celery/releases");
-                    List<Release> releases = response.FromJson<List<Release>>();
-                    foreach (Release release in releases)
+                    if (process.MainModule != null && process.MainModule.FileName.Equals(exePath, StringComparison.OrdinalIgnoreCase))
+                        return process;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error accessing process: {ex.Message}");
+                }
+            }
+
+            return null;
+        }
+
+        private string GetContentType(string filename)
+        {
+            string extension = Path.GetExtension(filename).ToLowerInvariant();
+            return extension switch
+            {
+                ".html" => "text/html",
+                ".htm" => "text/html",
+                ".css" => "text/css",
+                ".js" => "application/javascript",
+                ".json" => "application/json",
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                ".jpeg" => "image/jpeg",
+                ".gif" => "image/gif",
+                ".svg" => "image/svg+xml",
+                ".ico" => "image/x-icon",
+                _ => "application/octet-stream",
+            };
+
+            switch (extension)
+            {
+                case ".html": return "text/html";
+            }
+        }
+
+        public int FindFreePort()
+        {
+            TcpListener l = new(IPAddress.Loopback, 0);
+            l.Start();
+            int port = ((IPEndPoint)l.LocalEndpoint).Port;
+            l.Stop();
+            return port;
+        }
+
+        public void ExtractZip(byte[] zip, string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+
+                using MemoryStream stream = new(zip);
+                using ZipArchive archive = new(stream);
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    string fileName = Path.Combine(path, entry.FullName);
+                    if (entry.Name == "")
                     {
-                        Dispatcher.Invoke(() =>
+                        Directory.CreateDirectory(fileName);
+                        continue;
+                    }
+
+                    try
+                    {
+                        entry.ExtractToFile(fileName, true);
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        public App()
+        {
+            Cef.Initialize(new CefSettings
+            {
+                CachePath = Path.Combine(Config.ApplicationPath, "cache")
+            });
+
+            IServiceCollection services = new ServiceCollection();
+
+            // View Models
+            services.AddSingleton<ExplorerViewModel>();
+            services.AddSingleton<ConsoleViewModel>();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<SettingsViewModel>();
+
+            // Services
+            services.AddSingleton<IInjectionService, InjectionService>();
+            services.AddSingleton<ILoggerService, LoggerService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<ITabSavingService, TabSavingService>();
+            services.AddSingleton<IThemeService, ThemeService>();
+            services.AddSingleton<IUpdateService, UpdateService>();
+
+            // Views
+            services.AddSingleton(provider => new MainWindow(
+                provider.GetRequiredService<ExplorerViewModel>(),
+                provider.GetRequiredService<ConsoleViewModel>(),
+                provider.GetRequiredService<SettingsViewModel>(),
+                provider.GetRequiredService<ISettingsService>())
+            {
+                DataContext = provider.GetRequiredService<MainViewModel>()
+            });
+            services.AddSingleton<TabsHost>();
+
+            // Other
+            services.AddSingleton<ObservableCollection<Setting>>();
+
+            ServiceProvider = services.BuildServiceProvider();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // AppData path
+            if (!Directory.Exists(Config.CeleryAppDataPath))
+                Directory.CreateDirectory(Config.CeleryAppDataPath);
+            if (!Directory.Exists(Config.ThemesPath))
+                Directory.CreateDirectory(Config.ThemesPath);
+            if (!Directory.Exists(Config.TabsPath))
+                Directory.CreateDirectory(Config.TabsPath);
+
+            // Local path
+            if (!Directory.Exists(Config.ScriptsPath))
+                Directory.CreateDirectory(Config.ScriptsPath);
+            if (!Directory.Exists(Config.BinPath))
+                Directory.CreateDirectory(Config.BinPath);
+            ExtractZip(Config.Ace, Config.AcePath);
+            ExtractZip(Config.Monaco, Config.MonacoPath);
+            ExtractZip(Config.Lsp, Config.LspPath);
+
+            // Start the lsp
+            string lspPath = Path.Combine(Config.LspPath, "main.exe");
+            LspProcess = GetProcess(lspPath);
+            if (LspProcess == null)
+            {
+                LspProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = lspPath,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        WorkingDirectory = Config.LspPath
+                    }
+                };
+                LspProcess.Start();
+            }
+            else
+            {
+                Console.WriteLine("LSP Instance already exists");
+            }
+
+            // Start the web server
+            Task.Run(() =>
+            {
+                HttpListener listener = new();
+                MonacoPort = FindFreePort();
+                listener.Prefixes.Add($"http://localhost:{MonacoPort}/");
+                listener.Start();
+                Console.WriteLine($"Listening on port {MonacoPort}");
+
+                while (true)
+                {
+                    HttpListenerContext context = listener.GetContext();
+                    HttpListenerResponse response = context.Response;
+
+                    string[] segments =
+                    [
+                        Config.MonacoPath
+                    ];
+                    segments = segments.Concat(context.Request.Url.Segments.Skip(1)).ToArray();
+                    string path = Path.Combine(segments);
+                    if (Directory.Exists(path))
+                        path = Path.Combine(path, "index.html");
+
+                    if (File.Exists(path))
+                    {
+                        byte[] html = File.ReadAllBytes(path);
+                        response.ContentType = GetContentType(path);
+                        response.ContentLength64 = html.Length;
+                        response.OutputStream.Write(html, 0, html.Length);
+                    }
+                    else
+                    {
+                        response.StatusCode = (int)HttpStatusCode.NotFound;
+                    }
+
+                    response.Close();
+                }
+            });
+
+            IInjectionService injectionService = ServiceProvider.GetRequiredService<IInjectionService>();
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                List<int> openedProcs = [];
+                while (true)
+                {
+                    Process[] procs = Process.GetProcessesByName("RobloxPlayerBeta");
+                    foreach (Process proc in procs)
+                    {
+                        if (openedProcs.Contains(proc.Id))
+                            continue;
+                        
+                        openedProcs.Add(proc.Id);
+                        
+                        ThreadPool.QueueUserWorkItem(_ =>
                         {
-                            Anouncements.Add(new AnnouncementBox(release.body, AnnouncementType.Update));
+                            Process.GetProcessById(proc.Id).WaitForExit();
+                            injectionService.GetStatusCallback()?.Invoke(false);
+                            openedProcs.Remove(proc.Id);
                         });
                     }
-                } catch (HttpRequestException)
-                {
-
+                    Thread.Sleep(1000);
                 }
-            }).Start();
+            });
+
+            // Ensure that the constructor runs immediately
+            ServiceProvider.GetRequiredService<ISettingsService>();
+            ServiceProvider.GetRequiredService<IThemeService>();
+
+            MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+
+            ServiceProvider.GetRequiredService<IUpdateService>().CheckUpdate();
+
+            // Main startup
+            mainWindow.Loaded += (_, _) =>
+            {
+                // Load the tabs
+                ServiceProvider.GetRequiredService<ITabSavingService>().Load();
+            };
+            mainWindow.Show();
+        }
+
+        public async new static void Exit()
+        {
+            // Save the tabs before exiting
+            await ServiceProvider.GetRequiredService<ITabSavingService>().Save();
+            LspProcess.Kill();
+            Current.Shutdown();
         }
     }
 }

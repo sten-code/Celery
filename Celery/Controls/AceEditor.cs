@@ -1,29 +1,76 @@
-﻿using Celery.Utils;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
-using System.Web;
+using System.Windows;
+using System.Windows.Input;
+using CefSharp;
+using Celery.Utils;
 
-namespace Celery.Controls
+namespace Celery.Controls;
+
+public class AceEditor : Editor
 {
-    public class AceEditor : Editor
+    public bool IsTextLoaded { get; set; }
+    
+    public AceEditor(string text)
     {
-        public AceEditor(string text) : base("Ace", text)
-        { }
-
-        public override async void SetText(string text)
+        AllowDrop = true;
+        PreviewDragOver += (s, e) =>
         {
-            await CoreWebView2.ExecuteScriptAsync("editor.setValue(\"" + HttpUtility.JavaScriptStringEncode(text) + "\")");
-        }
+            e.Effects = DragDropEffects.Move;
+            e.Handled = true;
+        };
 
-        public override async Task<string> GetText()
+        Load(new Uri(Path.Combine(Config.BinPath, "Ace", "ace.html")).AbsoluteUri);
+
+        PreviewMouseWheel += (_, e) =>
         {
-            if (IsDoMLoaded)
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control)
+                return;
+
+            if (e.Delta > 0)
+                ZoomLevel += 0.1;
+            else if (e.Delta < 0)
+                ZoomLevel -= 0.1;
+        };
+
+        FrameLoadEnd += async (_, _) =>
+        {
+            Dispatcher.Invoke(() =>
             {
-                await ExecuteScriptAsync("window.chrome.webview.postMessage(editor.getValue())");
-                while (!NewMessage) await Task.Delay(10);
-                NewMessage = false;
-                return LatestRecievedText;
-            }
-            return string.Empty;
-        }
+                ZoomLevel = 1.5;
+            });
+            await SetText(text);
+        };
+
+        JavascriptMessageReceived += (_, e) =>
+        {
+            TextChanged(e.Message.ToString(), !IsTextLoaded);
+            IsTextLoaded = true;
+        };
     }
+
+    public async override Task SetText(string text)
+    {
+        if (!CanExecuteJavascriptInMainFrame)
+        {
+            Console.WriteLine("Unable to set text");
+            return;
+        }
+
+        await this.EvaluateScriptAsync("editor.setValue(\"" + HttpUtils.JavaScriptStringEncode(text) + "\")");
+    }
+
+    public async override Task<string> GetText()
+    {
+        if (!CanExecuteJavascriptInMainFrame)
+        {
+            Console.WriteLine("Unable to get text");
+            return "";
+        }
+
+        JavascriptResponse response = await this.EvaluateScriptAsync("editor.getValue()");
+        return response.Result.ToString();
+    }
+
 }
