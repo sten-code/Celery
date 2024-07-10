@@ -26,6 +26,7 @@ namespace CeleryUpdater
             ];
 
             // The directory isn't immediately after accessible after killing the program so just try to delete it until its allowed
+            Console.WriteLine("Clearing directory...");
             while (Directory.GetDirectories(downloadPath).Length != whitelistedDirs.Length || Directory.GetFiles(downloadPath).Length != 0)
             {
                 try
@@ -33,9 +34,13 @@ namespace CeleryUpdater
                     foreach (string dir in Directory.GetDirectories(downloadPath))
                         if (!whitelistedDirs.Contains(Path.GetFileName(dir)))
                             Directory.Delete(dir, true);
-                    foreach (string file in Directory.GetFiles(downloadPath)) File.Delete(file);
+                    foreach (string file in Directory.GetFiles(downloadPath))
+                        File.Delete(file);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
 
             Console.Clear();

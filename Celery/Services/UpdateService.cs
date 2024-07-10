@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Celery.Core;
@@ -77,7 +79,7 @@ public class Author
     [JsonProperty("site_admin")]
     public bool SiteAdmin { get; set; }
 }
-    
+
 public class Release
 {
     [JsonProperty("url")]
@@ -134,24 +136,56 @@ public class UpdateService : ObservableObject, IUpdateService
 
     public async Task CheckUpdate()
     {
-        File.WriteAllBytes(Config.UpdaterPath, Config.CeleryUpdater);
-        
         using HttpClient client = new();
         client.DefaultRequestHeaders.Add("User-Agent", "Celery");
 
+        // Download information about the latest release from GitHub
         using HttpResponseMessage response = await client.GetAsync(Config.GitHubLatestReleaseUrl);
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            string content = await response.Content.ReadAsStringAsync();
+            Dictionary<string, string> body = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+            if (body.TryGetValue("message", out string msg))
+            {
+                // I can already tell that people are going to be dumb and send a screenshot of the error message.
+                Regex regex = new("((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}");
+                msg = regex.Replace(msg, "your IP");
+                LoggerService.Error($"Couldn't check if there were any updates: {msg}");
+            }
+            return;
+        }
+        
+        // Parse the response
         string json = await response.Content.ReadAsStringAsync();
-        Release release = JsonConvert.DeserializeObject<Release>(json);
+        Release release;
+        try
+        {
+            release = JsonConvert.DeserializeObject<Release>(json);
+        }
+        catch (JsonReaderException)
+        {
+            LoggerService.Error("Got an invalid response from the server while checking the latest version.");
+            return;
+        }
+        catch (Exception)
+        {
+            LoggerService.Error("Unknown exception occured while checking new updates.");
+            return;
+        }
+        Console.WriteLine(release.TagName);
+        // Parse the latest version so that it can be compared
         if (!Version.TryParse(release.TagName, out Version latestVersion))
         {
             LoggerService.Error($"Couldn't parse '{release.TagName}' as a version");
             return;
         }
 
-        // No new updates
+        // Check if the latest version is newer than the current version
         if (Config.Version >= latestVersion)
             return;
 
+        // Start the updater
+        File.WriteAllBytes(Config.UpdaterPath, Config.CeleryUpdater);
         new Process
         {
             StartInfo = new ProcessStartInfo
@@ -161,6 +195,8 @@ public class UpdateService : ObservableObject, IUpdateService
                 Verb = "runas"
             }
         }.Start();
+        if (App.LspProcess != null && !App.LspProcess.HasExited)
+            App.LspProcess.Kill();
         Application.Current.Shutdown();
     }
 }

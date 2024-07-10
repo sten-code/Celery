@@ -42,6 +42,7 @@ public class SettingsService : ObservableObject, ISettingsService
         Settings = settings;
         Settings.Add(new BooleanSetting("Background Blur", "background_blur", true, BooleanSettingChanged));
         Settings.Add(new BooleanSetting("Top Most", "topmost", false, BooleanSettingChanged));
+        Settings.Add(new BooleanSetting("Auto Inject", "autoinject", false, BooleanSettingChanged));
         Settings.Add(new ChoiceSetting("Theme", "theme", themeService.Themes.Keys.ToList(), 0, RestartOnChanged));
         Settings.Add(new ChoiceSetting("Editor", "editor", ["Monaco", "Ace"], 0, RestartOnChanged));
         Load();

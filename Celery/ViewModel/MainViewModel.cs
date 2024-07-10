@@ -151,9 +151,6 @@ namespace Celery.ViewModel
                     case InjectionResult.CANCELED:
                         LoggerService.Error("Canceled the injection process...");
                         break;
-                    case InjectionResult.CONNECTION_FAILED:
-                        LoggerService.Error("Connection failed, usually restarting Roblox fixes the issue.");
-                        break;
                 }
             }, o => true);
 

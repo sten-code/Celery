@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using Celery.Core;
-using Celery.ViewModel;
-using Newtonsoft.Json;
 
 namespace Celery.Services;
 
 public enum InjectionResult
 {
     FAILED,
-    CONNECTION_FAILED,
     CANCELED,
     ALREADY_INJECTING,
     ALREADY_INJECTED,
@@ -38,12 +32,6 @@ public class InjectionService : ObservableObject, IInjectionService
     private bool _isInjected;
     private Action<bool> _statusCallback;
     
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetProp(IntPtr hWnd, string lpString, IntPtr hData);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr FindWindow(string sClass, string sWindow);
-
     private ILoggerService LoggerService { get; }
 
     public InjectionService(ILoggerService loggerService)
@@ -53,6 +41,12 @@ public class InjectionService : ObservableObject, IInjectionService
 
     public async Task<InjectionResult> Inject()
     {
+        if (!File.Exists(Config.InjectorPath))
+        {
+            LoggerService.Error("Couldn't find 'CeleryInject.exe'");
+            return InjectionResult.FAILED;
+        }
+        
         if (!IsRobloxOpen())
             return InjectionResult.ROBLOX_NOT_OPENED;
         
@@ -63,13 +57,12 @@ public class InjectionService : ObservableObject, IInjectionService
             return InjectionResult.ALREADY_INJECTED;
 
         _isInjectingMainPlayer = true;
-        SetProp(FindWindow(null, "Roblox"), "CELERYHOOKED", (IntPtr)273);
 
         if (_injectorProc != null && !_injectorProc.HasExited)
             _injectorProc.Kill();
 
         TaskCompletionSource<InjectionResult> tcs = new();
-
+        
         _injectorProc = new Process
         {
             StartInfo = new ProcessStartInfo()
