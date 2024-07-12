@@ -40,11 +40,12 @@ public class SettingsService : ObservableObject, ISettingsService
         ThemeService = themeService;
         TabSavingService = tabSavingService;
         Settings = settings;
-        Settings.Add(new BooleanSetting("Background Blur", "background_blur", true, BooleanSettingChanged));
-        Settings.Add(new BooleanSetting("Top Most", "topmost", false, BooleanSettingChanged));
-        Settings.Add(new BooleanSetting("Auto Inject", "autoinject", false, BooleanSettingChanged));
-        Settings.Add(new ChoiceSetting("Theme", "theme", themeService.Themes.Keys.ToList(), 0, RestartOnChanged));
-        Settings.Add(new ChoiceSetting("Editor", "editor", ["Monaco", "Ace"], 0, RestartOnChanged));
+        Settings.Add(new BooleanSetting("Background Blur", "background_blur", "Whether there should be a background blur behind the settings window.", true, BooleanSettingChanged));
+        Settings.Add(new BooleanSetting("Top Most", "topmost", "Forces Celery to be on the top of the screen.", false, BooleanSettingChanged));
+        Settings.Add(new BooleanSetting("Auto Inject", "autoinject", "Automatically injects when Roblox opens.", false, BooleanSettingChanged));
+        Settings.Add(new ChoiceSetting("Theme", "theme", "Customize the look of Celery.", themeService.Themes.Keys.ToList(), 0, RestartOnChanged));
+        Settings.Add(new ChoiceSetting("Editor", "editor", "The editor used for scripts, Ace is better for lower end machines, Monaco has more features.", ["Monaco", "Ace"], 0, RestartOnChanged));
+        Settings.Add(new BooleanSetting("Auto Fix Errors", "autofixerrors", "Disable this if your internet is slow and you have auto inject enabled. Automatically force close Celery and Roblox when scanning takes too long.", true, BooleanSettingChanged));
         Load();
         ThemeService.SetTheme(GetSetting<string>("theme"));
     }

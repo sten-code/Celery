@@ -127,11 +127,15 @@ namespace Celery.ViewModel
                     WindowState = WindowState.Maximized;
             }, o => true);
 
-            ExecuteCommand = new RelayCommand(async o =>
+            ExecuteCommand = new RelayCommand(async _ =>
             {
-                string script = await TabsHost.FindSelectedEditor().GetText();
+                Editor editor = TabsHost.FindSelectedEditor();
+                if (editor == null)
+                    return;
+                
+                string script = await editor.GetText();
                 InjectionService.Execute(script);
-            }, o => true);
+            }, _ => true);
 
             InjectCommand = new RelayCommand(async o =>
             {
@@ -140,9 +144,6 @@ namespace Celery.ViewModel
                 {
                     case InjectionResult.FAILED:
                         LoggerService.Error("Injection failed!");
-                        break;
-                    case InjectionResult.ALREADY_INJECTED:
-                        LoggerService.Error("Already injected!");
                         break;
                     case InjectionResult.SUCCESS:
                         LoggerService.Info("Injected successfully!");

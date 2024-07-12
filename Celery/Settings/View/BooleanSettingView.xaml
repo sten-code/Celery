@@ -5,17 +5,25 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:settings="clr-namespace:Celery.Settings"
              mc:Ignorable="d"
-             Height="40" d:DesignWidth="300"
+             MinHeight="40" d:DesignWidth="300"
              Margin="0,0,0,5"
              d:DataContext="{d:DesignInstance settings:BooleanSetting}">
     <Border Background="{DynamicResource LightBackgroundBrush}"
             CornerRadius="4">
         <Grid>
-            <TextBlock Text="{Binding Name}"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Name}"
                        FontSize="13"
                        Foreground="{DynamicResource ForegroundBrush}"
-                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
-            <CheckBox HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"
+                       HorizontalAlignment="Left" VerticalAlignment="Top" Margin="7,3,0,0"/>
+            <TextBlock Grid.Column="0" Text="{Binding Description}"
+                       FontSize="11" TextWrapping="WrapWithOverflow"
+                       Foreground="{DynamicResource DarkForegroundBrush}"
+                       HorizontalAlignment="Left" VerticalAlignment="Top" Margin="7,20,0,5"/>
+            <CheckBox Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"
                       Background="{DynamicResource LightBackgroundBrush}"
                       IsChecked="{Binding Value, Mode=TwoWay}"
                       Command="{Binding CheckedCommand}"/>

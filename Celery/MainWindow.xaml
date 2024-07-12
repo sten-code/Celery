@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         WindowState="{Binding WindowState}"
         WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="450" Width="800"
+        Title="Celery" Height="450" Width="800"
         Closing="MainWindow_OnClosing"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.Icon>

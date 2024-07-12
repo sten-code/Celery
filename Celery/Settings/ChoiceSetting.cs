@@ -35,7 +35,7 @@ public class ChoiceSetting : Setting
         
     private Action<ChoiceSetting, string> OnChanged { get; }
 
-    public ChoiceSetting(string name, string id, List<string> options, int selectedIndex, Action<ChoiceSetting, string> onChanged) : base(name, id)
+    public ChoiceSetting(string name, string id, string description, List<string> options, int selectedIndex, Action<ChoiceSetting, string> onChanged) : base(name, id, description)
     {
         OnChanged = onChanged;
         Options = options;

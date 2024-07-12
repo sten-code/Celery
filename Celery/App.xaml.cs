@@ -216,8 +216,7 @@ public partial class App
             List<int> openedProcs = [];
             while (true)
             {
-                Process[] procs = Process.GetProcessesByName("RobloxPlayerBeta");
-                foreach (Process proc in procs)
+                foreach (Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
                 {
                     if (openedProcs.Contains(proc.Id))
                         continue;

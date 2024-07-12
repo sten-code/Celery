@@ -22,7 +22,7 @@ namespace Celery.Settings
 
         private Action<BooleanSetting, bool> OnChanged { get; }
 
-        public BooleanSetting(string name, string id, bool value, Action<BooleanSetting, bool> onChanged) : base(name, id)
+        public BooleanSetting(string name, string id, string description, bool value, Action<BooleanSetting, bool> onChanged) : base(name, id, description)
         {
             Value = value;
             OnChanged = onChanged;
