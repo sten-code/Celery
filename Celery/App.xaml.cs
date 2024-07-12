@@ -163,7 +163,12 @@ public partial class App
         ExtractZip(Config.Ace, Config.AcePath);
         ExtractZip(Config.Monaco, Config.MonacoPath);
         ExtractZip(Config.Lsp, Config.LspPath);
-
+        
+        // Temp path
+        if (!Directory.Exists(Config.CeleryTempPath))
+            Directory.CreateDirectory(Config.CeleryTempPath);
+        File.WriteAllText(Config.CeleryHomeFile, Config.ApplicationPath);
+        
         // Start the web server
         ThreadPool.QueueUserWorkItem(_ =>
         {

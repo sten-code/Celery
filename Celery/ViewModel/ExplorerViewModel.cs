@@ -23,16 +23,16 @@ public class ExplorerViewModel : Core.ViewModel
 
     public ICommand CloseCommand { get; set; }
     public ICommand OpenFolderLocationCommand { get; }
-    public TreeView FileTreeView { get; set; }
+    public TreeView FileTreeView { get; }
     public TabsHost TabsHost { get; }
 
-    private FileSystemWatcher _watcher { get; set; }
+    private FileSystemWatcher _watcher { get; }
 
     public ExplorerViewModel(TabsHost tabsHost)
     {
         TabsHost = tabsHost;
 
-        OpenFolderLocationCommand = new RelayCommand(o => Process.Start(Config.ScriptsPath), o => true);
+        OpenFolderLocationCommand = new RelayCommand(_ => Process.Start(Config.ScriptsPath), _ => true);
 
         FileTreeView = new TreeView();
         FileTreeView.Items.SortDescriptions.Clear();
@@ -207,5 +207,5 @@ public class ExplorerViewModel : Core.ViewModel
             }
         });
     }
-        
+
 }

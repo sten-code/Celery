@@ -172,7 +172,7 @@ public class UpdateService : ObservableObject, IUpdateService
             LoggerService.Error("Unknown exception occured while checking new updates.");
             return;
         }
-        Console.WriteLine(release.TagName);
+        
         // Parse the latest version so that it can be compared
         if (!Version.TryParse(release.TagName, out Version latestVersion))
         {

@@ -7,7 +7,7 @@ namespace Celery
     public static class Config
     {
         // Version template: <release type (alpha | beta | release)>.<standard update>.<bug fixes/small changes>
-        public static readonly Version Version = new("2.0.2");
+        public static readonly Version Version = new("2.0.3");
 
         // All local folders
         public static readonly string ApplicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -28,6 +28,7 @@ namespace Celery
         // All files inside the %temp%\celery folder
         public static readonly string CeleryTempPath = Path.Combine(Path.GetTempPath(), "celery");
         public static readonly string CeleryScriptFile = Path.Combine(CeleryTempPath, "myfile.txt");
+        public static readonly string CeleryHomeFile = Path.Combine(CeleryTempPath, "celeryhome.txt");
 
         // Urls
         public static readonly string GitHubUrl = "https://api.github.com/repos/sten-code/Celery";

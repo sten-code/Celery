@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using Celery.Core;
 using Celery.Services;
 
 namespace Celery.ViewModel;
@@ -10,11 +11,16 @@ namespace Celery.ViewModel;
 public class ConsoleViewModel : Core.ViewModel
 {
     public ICommand CloseCommand { get; set; }
+    public ICommand ClearCommand { get; set; }
     public RichTextBox OutputBox { get; }
 
     public ConsoleViewModel()
     {
         OutputBox = new RichTextBox();
+        ClearCommand = new RelayCommand(_ =>
+        {
+            OutputBox.Document.Blocks.Clear();
+        }, _ => true);
     }
 
     public void AddMessage(string message, ErrorLevel errorLevel)

@@ -13,11 +13,11 @@
             <Setter Property="Margin" Value="0" />
         </Style>
         <Style TargetType="{x:Type RichTextBox}">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
-            <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
         </Style>
     </UserControl.Resources>
     <Grid Background="{DynamicResource BackgroundBrush}">
@@ -32,19 +32,44 @@
                        VerticalAlignment="Top"
                        Foreground="{DynamicResource ForegroundBrush}" />
         </StackPanel>
-        <Button HorizontalAlignment="Right" VerticalAlignment="Top"
-                Width="20" Height="20" Command="{Binding CloseCommand}"
-                Background="{DynamicResource BackgroundBrush}">
-            <Path Stroke="{DynamicResource ForegroundBrush}"
-                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                  Stretch="Uniform" Width="11"
-                  Data="M21 21L12 12M12 12L3 3M12 12L21.0001 3M12 12L3 21.0001"
-                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-        </Button>
-        <Border Margin="0,21,0,0"
+        <StackPanel Height="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,3,0"
+                    Width="20" Height="20" Command="{Binding ClearCommand}"
+                    Background="{DynamicResource BackgroundBrush}">
+                <Viewbox Width="16" Height="16" Stretch="Uniform">
+                    <Canvas Width="24" Height="24">
+                        <Path Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" />
+                        <Path Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" />
+                        <Path Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M2 6H22" />
+                        <Path Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M10 11V16" />
+                        <Path Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M14 11V16" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+            <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Width="20" Height="20" Command="{Binding CloseCommand}"
+                    Background="{DynamicResource BackgroundBrush}">
+                <Path Stroke="{DynamicResource ForegroundBrush}"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Stretch="Uniform" Width="11"
+                      Data="M21 21L12 12M12 12L3 3M12 12L21.0001 3M12 12L3 21.0001"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+            </Button>
+        </StackPanel>
+        <Border Margin="0,24,0,0"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1" CornerRadius="4" Padding="2">
-            <ContentControl Content="{Binding OutputBox}" FontSize="13"/>
+            <ContentControl Content="{Binding OutputBox}" FontSize="13" />
         </Border>
     </Grid>
 </UserControl>

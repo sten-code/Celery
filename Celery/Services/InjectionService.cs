@@ -61,6 +61,19 @@ public class InjectionService : ObservableObject, IInjectionService
         if (_injectorProc != null && !_injectorProc.HasExited)
             _injectorProc.Kill();
 
+        foreach (Process process in Process.GetProcessesByName("CeleryInject"))
+        {
+            try
+            {
+                if (process.MainModule != null && process.MainModule.FileName.Equals(Config.InjectorPath, StringComparison.OrdinalIgnoreCase))
+                    process.Kill();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error accessing process: {ex.Message}");
+            }
+        }
+        
         TaskCompletionSource<InjectionResult> tcs = new();
         
         _injectorProc = new Process
@@ -91,12 +104,20 @@ public class InjectionService : ObservableObject, IInjectionService
             Console.WriteLine(message);
             LoggerService.Info(message);
 
-            if (message == "READY")
+            switch (message)
             {
-                tcs.TrySetResult(InjectionResult.SUCCESS);
-                _isInjected = true;
-                _isInjectingMainPlayer = false;
-                _statusCallback?.Invoke(true);
+                case "READY":
+                    tcs.TrySetResult(InjectionResult.SUCCESS);
+                    _isInjected = true;
+                    _isInjectingMainPlayer = false;
+                    _statusCallback?.Invoke(true);
+                    break;
+                case "No window":
+                    tcs.TrySetResult(InjectionResult.FAILED);
+                    _isInjected = false;
+                    _isInjectingMainPlayer = false;
+                    _statusCallback?.Invoke(false);
+                    break;
             }
         };
         
@@ -119,7 +140,15 @@ public class InjectionService : ObservableObject, IInjectionService
 
     public void SetStatusCallback(Action<bool> callback)
     {
-        _statusCallback = callback;
+        _statusCallback = injected =>
+        {
+            if (!injected)
+            {
+                _isInjectingMainPlayer = false;
+                _isInjected = false;
+            }
+            callback(injected);
+        };;
     }
 
     public Action<bool> GetStatusCallback()
@@ -140,6 +169,7 @@ public class InjectionService : ObservableObject, IInjectionService
 
     private static bool IsRobloxOpen()
     {
+        return true;
         return Process.GetProcessesByName("RobloxPlayerBeta").Length > 0;
     }
 }

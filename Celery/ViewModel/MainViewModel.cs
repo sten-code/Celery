@@ -92,6 +92,11 @@ namespace Celery.ViewModel
             InjectionService = injectionService;
             LoggerService = loggerService;
 
+            ExplorerViewModel.ExecuteScript += (_, e) =>
+            {
+                InjectionService.Execute(e.Content);
+            };
+            
             InjectionService.SetStatusCallback((injected) =>
             {
                 App.ServiceProvider.GetRequiredService<MainWindow>().Dispatcher.Invoke(() =>
