@@ -15,7 +15,7 @@ public class AceEditor : Editor
     public AceEditor(string text)
     {
         AllowDrop = true;
-        PreviewDragOver += (s, e) =>
+        PreviewDragOver += (_, e) =>
         {
             e.Effects = DragDropEffects.Move;
             e.Handled = true;

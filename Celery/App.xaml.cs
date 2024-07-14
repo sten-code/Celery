@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Celery.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
@@ -28,8 +29,8 @@ public partial class App
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-        
-    static Process GetProcess(string exePath)
+
+    public static Process GetProcess(string exePath)
     {
         string exeName = Path.GetFileNameWithoutExtension(exePath);
         foreach (Process process in Process.GetProcessesByName(exeName))
@@ -163,14 +164,14 @@ public partial class App
         ExtractZip(Config.Ace, Config.AcePath);
         ExtractZip(Config.Monaco, Config.MonacoPath);
         ExtractZip(Config.Lsp, Config.LspPath);
-        
+
         // Temp path
         if (!Directory.Exists(Config.CeleryTempPath))
             Directory.CreateDirectory(Config.CeleryTempPath);
         File.WriteAllText(Config.CeleryHomeFile, Config.ApplicationPath);
-        
+
         // Start the web server
-        ThreadPool.QueueUserWorkItem(_ =>
+        Task.Run(() =>
         {
             HttpListener listener = new();
             MonacoPort = FindFreePort();
@@ -208,55 +209,8 @@ public partial class App
             }
         });
 
-        IInjectionService injectionService = ServiceProvider.GetRequiredService<IInjectionService>();
-        ISettingsService settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
-
-        ThreadPool.QueueUserWorkItem(_ =>
-        {
-            List<int> openedProcs = [];
-            while (true)
-            {
-                foreach (Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
-                {
-                    if (openedProcs.Contains(proc.Id))
-                        continue;
-                        
-                    bool autoInject = settingsService.GetSetting<bool>("autoinject");
-                    if (autoInject)
-                    {
-                        ThreadPool.QueueUserWorkItem(_ =>
-                        {
-                            int tries = 0;
-                            while (FindWindow(null, "Roblox") == IntPtr.Zero)
-                            {
-                                Thread.Sleep(1000);
-                                tries++;
-                                if (tries > 30)
-                                    break;
-                            }
-
-                            if (tries <= 30)
-                                injectionService.Inject();
-                        });
-                    }
-                        
-                    openedProcs.Add(proc.Id);
-                        
-                    ThreadPool.QueueUserWorkItem(_ =>
-                    {
-                        Process.GetProcessById(proc.Id).WaitForExit();
-                        injectionService.GetStatusCallback()?.Invoke(false);
-                        openedProcs.Remove(proc.Id);
-                    });
-                }
-                Thread.Sleep(1000);
-            }
-        });
-
         // Ensure that the constructor runs immediately
         ServiceProvider.GetRequiredService<IThemeService>();
-
-        MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
 
         ServiceProvider.GetRequiredService<IUpdateService>().CheckUpdate();
 
@@ -281,7 +235,9 @@ public partial class App
         {
             Console.WriteLine("LSP Instance already exists");
         }
-            
+
+        MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+
         // Main startup
         mainWindow.Loaded += (_, _) =>
         {
@@ -289,6 +245,50 @@ public partial class App
             ServiceProvider.GetRequiredService<ITabSavingService>().Load();
         };
         mainWindow.Show();
+        
+        IInjectionService injectionService = ServiceProvider.GetRequiredService<IInjectionService>();
+        ISettingsService settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
+        Task.Run(() =>
+        {
+            List<int> openedProcs = [];
+            while (true)
+            {
+                foreach (Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
+                {
+                    if (openedProcs.Contains(proc.Id))
+                        continue;
+
+                    bool autoInject = settingsService.GetSetting<bool>("autoinject");
+                    if (autoInject)
+                    {
+                        Task.Run(() =>
+                        {
+                            int tries = 0;
+                            while (FindWindow(null, "Roblox") == IntPtr.Zero)
+                            {
+                                Thread.Sleep(1000);
+                                tries++;
+                                if (tries > 30)
+                                    break;
+                            }
+
+                            if (tries <= 30 && !injectionService.IsInjected())
+                                injectionService.Inject();
+                        });
+                    }
+
+                    openedProcs.Add(proc.Id);
+
+                    Task.Run(() =>
+                    {
+                        Process.GetProcessById(proc.Id).WaitForExit();
+                        injectionService.GetStatusCallback()?.Invoke(false);
+                        openedProcs.Remove(proc.Id);
+                    });
+                }
+                Thread.Sleep(1000);
+            }
+        });
     }
 
     public async new static void Exit()

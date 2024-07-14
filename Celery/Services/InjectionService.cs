@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Celery.Core;
 
@@ -10,11 +10,11 @@ namespace Celery.Services;
 
 public enum InjectionResult
 {
-    FAILED,
-    CANCELED,
-    ALREADY_INJECTING,
-    ROBLOX_NOT_OPENED,
-    SUCCESS
+    Failed,
+    Canceled,
+    AlreadyInjecting,
+    RobloxNotOpened,
+    Success
 }
 
 public interface IInjectionService
@@ -32,17 +32,41 @@ public class InjectionService : ObservableObject, IInjectionService
     private bool _isInjectingMainPlayer;
     private bool _isInjected;
     private Action<bool> _statusCallback;
-    
+
     private ILoggerService LoggerService { get; }
     private ISettingsService SettingsService { get; }
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-    
+
     public InjectionService(ILoggerService loggerService, ISettingsService settingsService)
     {
         LoggerService = loggerService;
         SettingsService = settingsService;
+        
+        Process[] processes = Process.GetProcessesByName("CeleryInject");
+        if (processes.Length == 0)
+            return;
+        
+        if (processes.Length > 1)
+        {
+            foreach (Process proc in processes.Skip(1))
+            {
+                try
+                {
+                    proc.Kill();
+                }
+                catch (Exception e)
+                {
+                    LoggerService.Error($"Couldn't kill injector: {e.Message}");
+                }
+            }
+        }
+
+        LoggerService.Info("Found existing injector");
+        _injectorProc = processes[0];
+        _isInjected = true;
+        _isInjectingMainPlayer = false;
     }
 
     public async Task<InjectionResult> Inject()
@@ -50,11 +74,15 @@ public class InjectionService : ObservableObject, IInjectionService
         if (!File.Exists(Config.InjectorPath))
         {
             LoggerService.Error("Couldn't find 'CeleryInject.exe'");
-            return InjectionResult.FAILED;
+            return InjectionResult.Failed;
         }
-        
-        if (_injectorProc != null && !_injectorProc.HasExited)
-            _injectorProc.Kill();
+
+        try
+        {
+            if (_injectorProc != null && !_injectorProc.HasExited)
+                _injectorProc.Kill();
+        }
+        catch { }
 
         foreach (Process process in Process.GetProcessesByName("CeleryInject"))
         {
@@ -68,10 +96,10 @@ public class InjectionService : ObservableObject, IInjectionService
             }
         }
         _statusCallback?.Invoke(false);
-        
+
         if (!IsRobloxOpen())
-            return InjectionResult.ROBLOX_NOT_OPENED;
-        
+            return InjectionResult.RobloxNotOpened;
+
         int tries = 1;
         while (FindWindow(null, "Roblox") == IntPtr.Zero)
         {
@@ -81,12 +109,12 @@ public class InjectionService : ObservableObject, IInjectionService
             if (tries > 30)
             {
                 LoggerService.Error("Took too long for Roblox to start, aborting...");
-                return InjectionResult.FAILED;
+                return InjectionResult.Failed;
             }
         }
 
         TaskCompletionSource<InjectionResult> tcs = new();
-        
+
         _isInjectingMainPlayer = true;
         _injectorProc = new Process
         {
@@ -101,7 +129,7 @@ public class InjectionService : ObservableObject, IInjectionService
 
         _injectorProc.Exited += (_, _) =>
         {
-            tcs.TrySetResult(InjectionResult.CANCELED);
+            tcs.TrySetResult(InjectionResult.Canceled);
             _isInjected = false;
             _isInjectingMainPlayer = false;
             _statusCallback?.Invoke(false);
@@ -120,7 +148,7 @@ public class InjectionService : ObservableObject, IInjectionService
             switch (message)
             {
                 case "READY":
-                    tcs.TrySetResult(InjectionResult.SUCCESS);
+                    tcs.TrySetResult(InjectionResult.Success);
                     _isInjected = true;
                     _isInjectingMainPlayer = false;
                     _statusCallback?.Invoke(true);
@@ -128,7 +156,7 @@ public class InjectionService : ObservableObject, IInjectionService
                 case "Scanning...":
                     if (!SettingsService.GetSetting<bool>("autofixerrors"))
                         break;
-                    
+
                     scanningCount++;
                     if (scanningCount >= 10)
                     {
@@ -155,26 +183,25 @@ public class InjectionService : ObservableObject, IInjectionService
                                 LoggerService.Error($"Couldn't kill injector: {ex.Message}");
                             }
                         }
-                        tcs.TrySetResult(InjectionResult.FAILED);
+                        tcs.TrySetResult(InjectionResult.Failed);
                         _isInjected = false;
                         _isInjectingMainPlayer = false;
                         _statusCallback?.Invoke(false);
-                        if (_injectorProc != null)
-                            _injectorProc.Dispose();;
+                        _injectorProc?.Dispose();
                     }
                     break;
                 case "No window":
-                    tcs.TrySetResult(InjectionResult.FAILED);
+                    tcs.TrySetResult(InjectionResult.Failed);
                     _isInjected = false;
                     _isInjectingMainPlayer = false;
                     _statusCallback?.Invoke(false);
                     break;
             }
         };
-        
+
         _injectorProc.Start();
         _injectorProc.BeginOutputReadLine();
-        
+
         return await tcs.Task;
     }
 
@@ -199,7 +226,10 @@ public class InjectionService : ObservableObject, IInjectionService
                 _isInjected = false;
             }
             callback(injected);
-        };;
+        };
+        
+        Console.WriteLine("test: " + _isInjected);
+        _statusCallback?.Invoke(IsInjected());
     }
 
     public Action<bool> GetStatusCallback()
@@ -214,7 +244,7 @@ public class InjectionService : ObservableObject, IInjectionService
 
         if (!IsRobloxOpen())
             return false;
-        
+
         return !_injectorProc.HasExited && _isInjected;
     }
 

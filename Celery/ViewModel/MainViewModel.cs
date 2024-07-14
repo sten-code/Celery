@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -96,10 +97,12 @@ namespace Celery.ViewModel
             {
                 InjectionService.Execute(e.Content);
             };
-            
-            InjectionService.SetStatusCallback((injected) =>
+
+            StatusBrush = new SolidColorBrush(Colors.Red);
+            StatusText = "Not Injected";
+            InjectionService.SetStatusCallback(injected =>
             {
-                App.ServiceProvider.GetRequiredService<MainWindow>().Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     if (injected)
                     {
@@ -113,9 +116,6 @@ namespace Celery.ViewModel
                     }
                 });
             });
-
-            StatusBrush = new SolidColorBrush(Colors.Red);
-            StatusText = "Not Injected";
 
             ExitCommand = new RelayCommand(o => App.Exit(), o => true);
             MinimizeCommand = new RelayCommand(o => { WindowState = WindowState.Minimized; }, o => true);
@@ -132,7 +132,7 @@ namespace Celery.ViewModel
                 Editor editor = TabsHost.FindSelectedEditor();
                 if (editor == null)
                     return;
-                
+
                 string script = await editor.GetText();
                 InjectionService.Execute(script);
             }, _ => true);
@@ -142,19 +142,19 @@ namespace Celery.ViewModel
                 InjectionResult result = await InjectionService.Inject();
                 switch (result)
                 {
-                    case InjectionResult.FAILED:
+                    case InjectionResult.Failed:
                         LoggerService.Error("Injection failed!");
                         break;
-                    case InjectionResult.SUCCESS:
+                    case InjectionResult.Success:
                         LoggerService.Info("Injected successfully!");
                         break;
-                    case InjectionResult.ALREADY_INJECTING:
+                    case InjectionResult.AlreadyInjecting:
                         LoggerService.Error("Already injecting...");
                         break;
-                    case InjectionResult.ROBLOX_NOT_OPENED:
+                    case InjectionResult.RobloxNotOpened:
                         LoggerService.Error("Roblox isn't open!");
                         break;
-                    case InjectionResult.CANCELED:
+                    case InjectionResult.Canceled:
                         LoggerService.Error("Canceled the injection process...");
                         break;
                 }

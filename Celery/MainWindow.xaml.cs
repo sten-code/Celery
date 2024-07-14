@@ -1,16 +1,14 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using Celery.Core;
 using Celery.Services;
 using Celery.Utils;
 using Celery.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Celery
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private ExplorerViewModel ExplorerViewModel { get; }
         private ConsoleViewModel ConsoleViewModel { get; }
@@ -23,26 +21,25 @@ namespace Celery
             ExplorerViewModel = explorerViewModel;
             ConsoleViewModel = consoleViewModel;
             SettingsViewModel = settingsViewModel;
-            SettingsViewModel.CloseCommand = new RelayCommand(SettingsCloseCommand, o => true);
+            SettingsViewModel.CloseCommand = new RelayCommand(SettingsCloseCommand, _ => true);
 
             SettingsService = settingsService;
-            SettingsService.OnSettingChanged += (s, e) =>
+            SettingsService.OnSettingChanged += (_, e) =>
             {
                 if (e.Setting.Id == "topmost")
-                {
                     Topmost = (bool)e.Setting.GetValue();
-                }
             };
+            Topmost = settingsService.GetSetting<bool>("topmost");
 
-            ExplorerViewModel.CloseCommand = new RelayCommand(o =>
+            ExplorerViewModel.CloseCommand = new RelayCommand(_ =>
             {
                 ExplorerColumn.Width = new GridLength(0);
-            }, o => true);
+            }, _ => true);
 
-            ConsoleViewModel.CloseCommand = new RelayCommand(o =>
+            ConsoleViewModel.CloseCommand = new RelayCommand(_ =>
             {
                 ConsoleRow.Height = new GridLength(0);
-            }, o => true);
+            }, _ => true);
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
