@@ -228,7 +228,6 @@ public class InjectionService : ObservableObject, IInjectionService
             callback(injected);
         };
         
-        Console.WriteLine("test: " + _isInjected);
         _statusCallback?.Invoke(IsInjected());
     }
 
