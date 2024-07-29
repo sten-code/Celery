@@ -122,25 +122,26 @@ public class Release
 
 public interface IUpdateService
 {
-    Task CheckUpdate();
+    Task UpdateUI();
+    Task UpdateInjector();
 }
 
 public class UpdateService : ObservableObject, IUpdateService
 {
     private ILoggerService LoggerService { get; }
-        
+    private HttpClient HttpClient { get; }
+    
     public UpdateService(ILoggerService loggerService)
     {
         LoggerService = loggerService;
+        HttpClient = new HttpClient();
+        HttpClient.DefaultRequestHeaders.Add("User-Agent", "Celery");
     }
 
-    public async Task CheckUpdate()
+    private async Task<Release> GetLatestRelease()
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Add("User-Agent", "Celery");
-
         // Download information about the latest release from GitHub
-        using HttpResponseMessage response = await client.GetAsync(Config.GitHubLatestReleaseUrl);
+        using HttpResponseMessage response = await HttpClient.GetAsync(Config.GitHubLatestReleaseUrl);
         if (response.StatusCode != HttpStatusCode.OK)
         {
             string content = await response.Content.ReadAsStringAsync();
@@ -150,9 +151,9 @@ public class UpdateService : ObservableObject, IUpdateService
                 // I can already tell that people are going to be dumb and send a screenshot of the error message.
                 Regex regex = new("((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}");
                 msg = regex.Replace(msg, "your IP");
-                LoggerService.Error($"Couldn't check if there were any updates: {msg}");
+                LoggerService.Error($"Couldn't check if there were any UI updates: {msg}");
             }
-            return;
+            return null;
         }
         
         // Parse the response
@@ -165,13 +166,20 @@ public class UpdateService : ObservableObject, IUpdateService
         catch (JsonReaderException)
         {
             LoggerService.Error("Got an invalid response from the server while checking the latest version.");
-            return;
+            return null;
         }
         catch (Exception)
         {
             LoggerService.Error("Unknown exception occured while checking new updates.");
-            return;
+            return null;
         }
+        
+        return release;
+    }
+    
+    public async Task UpdateUI()
+    {
+        Release release = await GetLatestRelease();
         
         // Parse the latest version so that it can be compared
         if (!Version.TryParse(release.TagName, out Version latestVersion))
@@ -198,5 +206,31 @@ public class UpdateService : ObservableObject, IUpdateService
         if (App.LspProcess != null && !App.LspProcess.HasExited)
             App.LspProcess.Kill();
         Application.Current.Shutdown();
+    }
+
+    public async Task UpdateInjector()
+    {
+        using HttpResponseMessage response = await HttpClient.GetAsync("https://celerystick.xyz/Celery/settings.txt");
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            LoggerService.Error($"Couldn't check if there were any injector updates: {response.StatusCode}");
+            return;
+        }
+
+        string content = await response.Content.ReadAsStringAsync();
+        string[] lines = content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+        Dictionary<string, string> result = new();
+        foreach (string line in lines)
+        {
+            string[] pair = line.Split(['='], 2);
+            if (pair.Length != 2)
+                continue;
+
+            string key = pair[0];
+            string value = pair[1];
+            result[key] = value;
+        }
+        
+        // TODO: finish the injector update system
     }
 }

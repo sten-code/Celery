@@ -22,7 +22,7 @@ namespace CeleryUpdater
             string downloadPath = args[1];
             string[] whitelistedDirs =
             [
-                "scripts"
+                "scripts", "autoexec"
             ];
 
             // The directory isn't immediately after accessible after killing the program so just try to delete it until its allowed

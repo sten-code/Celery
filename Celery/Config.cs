@@ -14,6 +14,7 @@ namespace Celery
         public static readonly string InjectorPath = Path.Combine(ApplicationPath, "CeleryInject.exe");
         public static readonly string ScriptsPath = Path.Combine(ApplicationPath, "scripts");
         public static readonly string BinPath = Path.Combine(ApplicationPath, "bin");
+        public static readonly string AutoExecPath = Path.Combine(ApplicationPath, "autoexec");
         public static readonly string AcePath = Path.Combine(BinPath, "Ace");
         public static readonly string MonacoPath = Path.Combine(BinPath, "Monaco");
         public static readonly string LspPath = Path.Combine(BinPath, "lsp");

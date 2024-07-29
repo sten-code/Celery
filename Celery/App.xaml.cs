@@ -161,6 +161,8 @@ public partial class App
             Directory.CreateDirectory(Config.ScriptsPath);
         if (!Directory.Exists(Config.BinPath))
             Directory.CreateDirectory(Config.BinPath);
+        if (!Directory.Exists(Config.AutoExecPath))
+            Directory.CreateDirectory(Config.AutoExecPath);
         ExtractZip(Config.Ace, Config.AcePath);
         ExtractZip(Config.Monaco, Config.MonacoPath);
         ExtractZip(Config.Lsp, Config.LspPath);
@@ -168,7 +170,7 @@ public partial class App
         // Temp path
         if (!Directory.Exists(Config.CeleryTempPath))
             Directory.CreateDirectory(Config.CeleryTempPath);
-        File.WriteAllText(Config.CeleryHomeFile, Config.ApplicationPath);
+        File.WriteAllText(Config.CeleryHomeFile, Config.ApplicationPath + "\\");
 
         // Start the web server
         Task.Run(() =>
@@ -212,7 +214,7 @@ public partial class App
         // Ensure that the constructor runs immediately
         ServiceProvider.GetRequiredService<IThemeService>();
 
-        ServiceProvider.GetRequiredService<IUpdateService>().CheckUpdate();
+        ServiceProvider.GetRequiredService<IUpdateService>().UpdateUI();
 
         // Start the lsp
         string lspPath = Path.Combine(Config.LspPath, "main.exe");
