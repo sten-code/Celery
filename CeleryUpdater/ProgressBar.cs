@@ -1,90 +1,155 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
 namespace CeleryUpdater;
 
-// https://gist.github.com/DanielSWolf/0ab6a96899cc5377bf54
-public class ProgressBar : IDisposable, IProgress<double> {
-	private const int blockCount = 50;
-	private readonly TimeSpan animationInterval = TimeSpan.FromSeconds(1.0 / 8);
-	private const string animation = @"|/-\";
+public class ProgressBar : IDisposable, IProgress<double>
+{
+    private readonly TimeSpan _animationInterval = TimeSpan.FromSeconds(1.0 / 8);
 
-	private readonly Timer timer;
+    private string _currentText = string.Empty;
+    internal int AnimationIndex;
+    internal double CurrentProgress;
+    internal bool Disposed;
 
-	private double currentProgress = 0;
-	private string currentText = string.Empty;
-	private bool disposed = false;
-	private int animationIndex = 0;
+    internal Timer Timer;
 
-	public ProgressBar() {
-		timer = new Timer(TimerHandler);
+    public ProgressBar()
+    {
+        Console.OutputEncoding = Encoding.UTF8;
 
-		// A progress bar is only for temporary display in a console window.
-		// If the console output is redirected to a file, draw nothing.
-		// Otherwise, we'll end up with a lot of garbage in the target file.
-		if (!Console.IsOutputRedirected) {
-			ResetTimer();
-		}
-	}
+        NumberOfBlocks = 50;
+        StartBracket = "[";
+        EndBracket = "]";
+        CompletedBlock = "#";
+        IncompleteBlock = "-";
+        AnimationSequence = @"|/-\-";
 
-	public void Report(double value) {
-		// Make sure value is in [0..1] range
-		value = Math.Max(0, Math.Min(1, value));
-		Interlocked.Exchange(ref currentProgress, value);
-	}
+        DisplayBar = true;
+        DisplayPercentComplete = true;
+        DisplayAnimation = true;
 
-	private void TimerHandler(object state) {
-		lock (timer) {
-			if (disposed) return;
+        Timer = new Timer(TimerHandler);
 
-			int progressBlockCount = (int) (currentProgress * blockCount);
-			int percent = (int) (currentProgress * 100);
-			string text = string.Format("[{0}{1}] {2,3}% {3}",
-				new string('#', progressBlockCount), new string('-', blockCount - progressBlockCount),
-				percent,
-				animation[animationIndex++ % animation.Length]);
-			UpdateText(text);
+        // A progress bar is only for temporary display in a console window.
+        // If the console output is redirected to a file, draw nothing.
+        // Otherwise, we'll end up with a lot of garbage in the target file.
+        if (!Console.IsOutputRedirected)
+            ResetTimer();
+    }
 
-			ResetTimer();
-		}
-	}
+    public int NumberOfBlocks { get; set; }
+    public string StartBracket { get; set; }
+    public string EndBracket { get; set; }
+    public string CompletedBlock { get; set; }
+    public string IncompleteBlock { get; set; }
+    public string AnimationSequence { get; set; }
+    public bool DisplayBar { get; set; }
+    public bool DisplayPercentComplete { get; set; }
+    public bool DisplayAnimation { get; set; }
 
-	private void UpdateText(string text) {
-		// Get length of common portion
-		int commonPrefixLength = 0;
-		int commonLength = Math.Min(currentText.Length, text.Length);
-		while (commonPrefixLength < commonLength && text[commonPrefixLength] == currentText[commonPrefixLength]) {
-			commonPrefixLength++;
-		}
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-		// Backtrack to the first differing character
-		StringBuilder outputBuilder = new StringBuilder();
-		outputBuilder.Append('\b', currentText.Length - commonPrefixLength);
+    public void Report(double value)
+    {
+        // Make sure value is in [0..1] range
+        value = Math.Max(0, Math.Min(1, value));
+        Interlocked.Exchange(ref CurrentProgress, value);
+    }
 
-		// Output new suffix
-		outputBuilder.Append(text.Substring(commonPrefixLength));
+    private void TimerHandler(object state)
+    {
+        lock (Timer)
+        {
+            if (Disposed) return;
+            UpdateText(GetProgressBarText(CurrentProgress));
+            ResetTimer();
+        }
+    }
 
-		// If the new text is shorter than the old one: delete overlapping characters
-		int overlapCount = currentText.Length - text.Length;
-		if (overlapCount > 0) {
-			outputBuilder.Append(' ', overlapCount);
-			outputBuilder.Append('\b', overlapCount);
-		}
+    private string GetProgressBarText(double currentProgress)
+    {
+        const string singleSpace = " ";
 
-		Console.Write(outputBuilder);
-		currentText = text;
-	}
+        var numBlocksCompleted = (int)(currentProgress * NumberOfBlocks);
 
-	private void ResetTimer() {
-		timer.Change(animationInterval, TimeSpan.FromMilliseconds(-1));
-	}
+        var completedBlocks =
+            Enumerable.Range(0, numBlocksCompleted).Aggregate(
+                string.Empty,
+                (current, _) => current + CompletedBlock);
 
-	public void Dispose() {
-		lock (timer) {
-			disposed = true;
-			UpdateText(string.Empty);
-		}
-	}
+        var incompleteBlocks =
+            Enumerable.Range(0, NumberOfBlocks - numBlocksCompleted).Aggregate(
+                string.Empty,
+                (current, _) => current + IncompleteBlock);
 
+        var progressBar = $"{StartBracket}{completedBlocks}{incompleteBlocks}{EndBracket}";
+        var percent = $"{currentProgress:P0}".PadLeft(4, '\u00a0');
+        var animationFrame = AnimationSequence[AnimationIndex++ % AnimationSequence.Length];
+        var animation = $"{animationFrame}";
+
+        progressBar = DisplayBar
+            ? progressBar + singleSpace
+            : string.Empty;
+
+        percent = DisplayPercentComplete
+            ? percent + singleSpace
+            : string.Empty;
+
+        if (!DisplayAnimation || currentProgress is 1)
+        {
+            animation = string.Empty;
+        }
+
+        return (progressBar + percent + animation).TrimEnd();
+    }
+
+    internal void UpdateText(string text)
+    {
+        // Get length of common portion
+        var commonPrefixLength = 0;
+        var commonLength = Math.Min(_currentText.Length, text.Length);
+        while (commonPrefixLength < commonLength && text[commonPrefixLength] == _currentText[commonPrefixLength])
+            commonPrefixLength++;
+
+        // Backtrack to the first differing character
+        var outputBuilder = new StringBuilder();
+        outputBuilder.Append('\b', _currentText.Length - commonPrefixLength);
+
+        // Output new suffix
+        outputBuilder.Append(text.Substring(commonPrefixLength));
+
+        // If the new text is shorter than the old one: delete overlapping characters
+        var overlapCount = _currentText.Length - text.Length;
+        if (overlapCount > 0)
+        {
+            outputBuilder.Append(' ', overlapCount);
+            outputBuilder.Append('\b', overlapCount);
+        }
+
+        //Console.Write($"{Caption}{outputBuilder}");
+        Console.Write(outputBuilder);
+        _currentText = text;
+    }
+
+    internal void ResetTimer()
+    {
+        Timer.Change(_animationInterval, TimeSpan.FromMilliseconds(-1));
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing) return;
+
+        lock (Timer)
+        {
+            Disposed = true;
+        }
+    }
 }

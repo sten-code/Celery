@@ -81,13 +81,22 @@ public class ThemeService : ObservableObject, IThemeService
         {
             LoggerService.Error($"Couldn't find Ace theme template file: '{templatePath}'");
         }
-
+        
         // Apply the monaco theme
         string monacoThemePath = Path.Combine(Config.ThemesPath, name + ".json");
-        string themePath = Path.Combine(Config.BinPath, "Monaco", "assets", "theme.json");
-        if (File.Exists(monacoThemePath))
-            File.Copy(monacoThemePath, themePath, true);
-        else
+        if (!File.Exists(monacoThemePath))
+        {
             LoggerService.Error($"Couldn't find Monaco theme file: '{monacoThemePath}'");
+            return;
+        }
+
+        string themePath = Path.Combine(Config.BinPath, "Monaco", "assets", "theme.json");
+        if (!File.Exists(themePath))
+        {
+            LoggerService.Error($"Couldn't find Target Monaco theme file: '{themePath}'");
+            return;
+        }
+        
+        File.Copy(monacoThemePath, themePath, true);
     }
 }
