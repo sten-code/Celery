@@ -121,6 +121,7 @@ public class InjectionService : ObservableObject, IInjectionService
             StartInfo = new ProcessStartInfo()
             {
                 FileName = Config.InjectorPath,
+                WorkingDirectory = Config.InjectorFolderPath,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true
@@ -152,43 +153,6 @@ public class InjectionService : ObservableObject, IInjectionService
                     _isInjected = true;
                     _isInjectingMainPlayer = false;
                     _statusCallback?.Invoke(true);
-                    break;
-                case "Scanning...":
-                    if (!SettingsService.GetSetting<bool>("autofixerrors"))
-                        break;
-
-                    scanningCount++;
-                    if (scanningCount >= 10)
-                    {
-                        LoggerService.Error("Detected an error, force closing Roblox and Celery injector...");
-                        foreach (Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))
-                        {
-                            try
-                            {
-                                proc.Kill();
-                            }
-                            catch (Exception ex)
-                            {
-                                LoggerService.Error($"Couldn't kill Roblox: {ex.Message}");
-                            }
-                        }
-                        foreach (Process process in Process.GetProcessesByName("CeleryInject"))
-                        {
-                            try
-                            {
-                                process.Kill();
-                            }
-                            catch (Exception ex)
-                            {
-                                LoggerService.Error($"Couldn't kill injector: {ex.Message}");
-                            }
-                        }
-                        tcs.TrySetResult(InjectionResult.Failed);
-                        _isInjected = false;
-                        _isInjectingMainPlayer = false;
-                        _statusCallback?.Invoke(false);
-                        _injectorProc?.Dispose();
-                    }
                     break;
                 case "No window":
                     tcs.TrySetResult(InjectionResult.Failed);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -14,110 +15,62 @@ namespace Celery.Services;
 
 public class Asset
 {
-    [JsonProperty("url")]
-    public string Url { get; set; }
-    [JsonProperty("id")]
-    public long Id { get; set; }
-    [JsonProperty("name")]
-    public string Name { get; set; }
-    [JsonProperty("label")]
-    public string Label { get; set; }
-    [JsonProperty("uploader")]
-    public Author Uploader { get; set; }
-    [JsonProperty("content_type")]
-    public string ContentType { get; set; }
-    [JsonProperty("state")]
-    public string State { get; set; }
-    [JsonProperty("size")]
-    public long Size { get; set; }
-    [JsonProperty("download_count")]
-    public int DownloadCount { get; set; }
-    [JsonProperty("created_at")]
-    public DateTime CreatedAt { get; set; }
-    [JsonProperty("updated_at")]
-    public DateTime UpdatedAt { get; set; }
-    [JsonProperty("browser_download_url")]
-    public string BrowserDownloadUrl { get; set; }
+    [JsonProperty("url")] public string Url { get; set; }
+    [JsonProperty("id")] public long Id { get; set; }
+    [JsonProperty("name")] public string Name { get; set; }
+    [JsonProperty("label")] public string Label { get; set; }
+    [JsonProperty("uploader")] public Author Uploader { get; set; }
+    [JsonProperty("content_type")] public string ContentType { get; set; }
+    [JsonProperty("state")] public string State { get; set; }
+    [JsonProperty("size")] public long Size { get; set; }
+    [JsonProperty("download_count")] public int DownloadCount { get; set; }
+    [JsonProperty("created_at")] public DateTime CreatedAt { get; set; }
+    [JsonProperty("updated_at")] public DateTime UpdatedAt { get; set; }
+    [JsonProperty("browser_download_url")] public string BrowserDownloadUrl { get; set; }
 }
 
 public class Author
 {
-    [JsonProperty("login")]
-    public string Login { get; set; }
-    [JsonProperty("id")]
-    public long Id { get; set; }
-    [JsonProperty("node_id")]
-    public string NodeId { get; set; }
-    [JsonProperty("avatar_url")]
-    public string AvatarUrl { get; set; }
-    [JsonProperty("gravator_id")]
-    public string GravatorId { get; set; }
-    [JsonProperty("url")]
-    public string Url { get; set; }
-    [JsonProperty("html_url")]
-    public string HtmlUrl { get; set; }
-    [JsonProperty("followers_url")]
-    public string FollowersUrl { get; set; }
-    [JsonProperty("following_url")]
-    public string FollowingUrl { get; set; }
-    [JsonProperty("gists_url")]
-    public string GistsUrl { get; set; }
-    [JsonProperty("starred_url")]
-    public string StarredUrl { get; set; }
-    [JsonProperty("subscriptions_url")]
-    public string SubscriptionsUrl { get; set; }
-    [JsonProperty("organizations_url")]
-    public string OrganizationsUrl { get; set; }
-    [JsonProperty("repos_url")]
-    public string ReposUrl { get; set; }
-    [JsonProperty("events_url")]
-    public string EventsUrl { get; set; }
-    [JsonProperty("received_events_url")]
-    public string ReceivedEventsUrl { get; set; }
-    [JsonProperty("type")]
-    public string Type { get; set; }
-    [JsonProperty("site_admin")]
-    public bool SiteAdmin { get; set; }
+    [JsonProperty("login")] public string Login { get; set; }
+    [JsonProperty("id")] public long Id { get; set; }
+    [JsonProperty("node_id")] public string NodeId { get; set; }
+    [JsonProperty("avatar_url")] public string AvatarUrl { get; set; }
+    [JsonProperty("gravator_id")] public string GravatorId { get; set; }
+    [JsonProperty("url")] public string Url { get; set; }
+    [JsonProperty("html_url")] public string HtmlUrl { get; set; }
+    [JsonProperty("followers_url")] public string FollowersUrl { get; set; }
+    [JsonProperty("following_url")] public string FollowingUrl { get; set; }
+    [JsonProperty("gists_url")] public string GistsUrl { get; set; }
+    [JsonProperty("starred_url")] public string StarredUrl { get; set; }
+    [JsonProperty("subscriptions_url")] public string SubscriptionsUrl { get; set; }
+    [JsonProperty("organizations_url")] public string OrganizationsUrl { get; set; }
+    [JsonProperty("repos_url")] public string ReposUrl { get; set; }
+    [JsonProperty("events_url")] public string EventsUrl { get; set; }
+    [JsonProperty("received_events_url")] public string ReceivedEventsUrl { get; set; }
+    [JsonProperty("type")] public string Type { get; set; }
+    [JsonProperty("site_admin")] public bool SiteAdmin { get; set; }
 }
 
 public class Release
 {
-    [JsonProperty("url")]
-    public string Url { get; set; }
-    [JsonProperty("assets_url")]
-    public string AssetsUrl { get; set; }
-    [JsonProperty("upload_url")]
-    public string UploadUrl { get; set; }
-    [JsonProperty("html_url")]
-    public string HtmlUrl { get; set; }
-    [JsonProperty("id")]
-    public long Id { get; set; }
-    [JsonProperty("author")]
-    public Author Author { get; set; }
-    [JsonProperty("node_id")]
-    public string NodeId { get; set; }
-    [JsonProperty("tag_name")]
-    public string TagName { get; set; }
-    [JsonProperty("target_commitish")]
-    public string TargetCommitish { get; set; }
-    [JsonProperty("name")]
-    public string Name { get; set; }
-    [JsonProperty("draft")]
-    public bool Draft { get; set; }
-    [JsonProperty("prerelease")]
-    public bool Prerelease { get; set; }
-    [JsonProperty("created_at")]
-    public DateTime CreatedAt { get; set; }
-    [JsonProperty("published_at")]
-    public DateTime PublishedAt { get; set; }
-    [JsonProperty("assets")]
-    public List<Asset> Assets { get; set; }
-    [JsonProperty("tarball_url")]
-    public string TarballUrl { get; set; }
-    [JsonProperty("zipball_url")]
-    public string ZipballUrl { get; set; }
-    [JsonProperty("body")]
-    public string Body { get; set; }
+    [JsonProperty("url")] public string Url { get; set; }
+    [JsonProperty("assets_url")] public string AssetsUrl { get; set; }
+    [JsonProperty("upload_url")] public string UploadUrl { get; set; }
+    [JsonProperty("html_url")] public string HtmlUrl { get; set; }
+    [JsonProperty("id")] public long Id { get; set; }
+    [JsonProperty("author")] public Author Author { get; set; }
+    [JsonProperty("node_id")] public string NodeId { get; set; }
+    [JsonProperty("tag_name")] public string TagName { get; set; }
+    [JsonProperty("target_commitish")] public string TargetCommitish { get; set; }
+    [JsonProperty("name")] public string Name { get; set; }
+    [JsonProperty("draft")] public bool Draft { get; set; }
+    [JsonProperty("prerelease")] public bool Prerelease { get; set; }
+    [JsonProperty("created_at")] public DateTime CreatedAt { get; set; }
+    [JsonProperty("published_at")] public DateTime PublishedAt { get; set; }
+    [JsonProperty("assets")] public List<Asset> Assets { get; set; }
+    [JsonProperty("tarball_url")] public string TarballUrl { get; set; }
+    [JsonProperty("zipball_url")] public string ZipballUrl { get; set; }
+    [JsonProperty("body")] public string Body { get; set; }
 }
 
 public interface IUpdateService
@@ -130,7 +83,7 @@ public class UpdateService : ObservableObject, IUpdateService
 {
     private ILoggerService LoggerService { get; }
     private HttpClient HttpClient { get; }
-    
+
     public UpdateService(ILoggerService loggerService)
     {
         LoggerService = loggerService;
@@ -138,10 +91,10 @@ public class UpdateService : ObservableObject, IUpdateService
         HttpClient.DefaultRequestHeaders.Add("User-Agent", "Celery");
     }
 
-    private async Task<Release> GetLatestRelease()
+    private async Task<Release> GetLatestRelease(string url)
     {
         // Download information about the latest release from GitHub
-        using HttpResponseMessage response = await HttpClient.GetAsync(Config.GitHubLatestReleaseUrl);
+        using HttpResponseMessage response = await HttpClient.GetAsync(url);
         if (response.StatusCode != HttpStatusCode.OK)
         {
             string content = await response.Content.ReadAsStringAsync();
@@ -151,11 +104,11 @@ public class UpdateService : ObservableObject, IUpdateService
                 // I can already tell that people are going to be dumb and send a screenshot of the error message.
                 Regex regex = new("((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}");
                 msg = regex.Replace(msg, "your IP");
-                LoggerService.Error($"Couldn't check if there were any UI updates: {msg}");
+                LoggerService.Error($"Couldn't check if there were any updates: {msg}");
             }
             return null;
         }
-        
+
         // Parse the response
         string json = await response.Content.ReadAsStringAsync();
         Release release;
@@ -173,13 +126,15 @@ public class UpdateService : ObservableObject, IUpdateService
             LoggerService.Error("Unknown exception occured while checking new updates.");
             return null;
         }
-        
+
         return release;
     }
-    
+
     public async Task UpdateUI()
     {
-        Release release = await GetLatestRelease();
+        Release release = await GetLatestRelease(Config.GitHubUILatestReleaseUrl);
+        if (release == null)
+            return;
         
         // Parse the latest version so that it can be compared
         if (!Version.TryParse(release.TagName, out Version latestVersion))
@@ -210,27 +165,63 @@ public class UpdateService : ObservableObject, IUpdateService
 
     public async Task UpdateInjector()
     {
-        using HttpResponseMessage response = await HttpClient.GetAsync("https://celerystick.xyz/Celery/settings.txt");
-        if (response.StatusCode != HttpStatusCode.OK)
+        Release release = await GetLatestRelease(Config.GitHubInjectorLatestReleaseUrl);
+        if (release == null)
+            return;
+        
+        // Parse the latest version so that it can be compared
+        if (!Version.TryParse(release.TagName, out Version latestVersion))
         {
-            LoggerService.Error($"Couldn't check if there were any injector updates: {response.StatusCode}");
+            LoggerService.Error($"Couldn't parse '{release.TagName}' as a version");
             return;
         }
 
-        string content = await response.Content.ReadAsStringAsync();
-        string[] lines = content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
-        Dictionary<string, string> result = new();
-        foreach (string line in lines)
-        {
-            string[] pair = line.Split(['='], 2);
-            if (pair.Length != 2)
-                continue;
+        if (!File.Exists(Config.InjectorVersionPath))
+            File.WriteAllText(Config.InjectorVersionPath, "0.0.0");
 
-            string key = pair[0];
-            string value = pair[1];
-            result[key] = value;
+        if (!Version.TryParse(File.ReadAllText(Config.InjectorVersionPath), out Version currentVersion))
+        {
+            LoggerService.Error($"Couldn't parse '{release.TagName}' as a version from '{Config.InjectorVersionPath}'");
+            return;
         }
+
+        // Check if the latest version is newer than the current version
+        if (currentVersion >= latestVersion)
+            return;
+
+        LoggerService.Info("Updating the injector...");
         
-        // TODO: finish the injector update system
+        // Clear the injector path
+        if (Directory.Exists(Config.InjectorFolderPath))
+            Directory.Delete(Config.InjectorFolderPath, true);
+
+        Directory.CreateDirectory(Config.InjectorFolderPath);
+        using HttpClient client = new();
+        using MemoryStream memStream = new(8000000); // 8MB buffer
+        using HttpResponseMessage response = await client.GetAsync(release.Assets[0].BrowserDownloadUrl);
+        using Stream downloadStream = await response.Content.ReadAsStreamAsync();
+        await downloadStream.CopyToAsync(memStream);
+        using ZipArchive archive = new(memStream);
+        foreach (ZipArchiveEntry entry in archive.Entries)
+        {
+            string fileName = Path.Combine(Config.InjectorFolderPath, entry.FullName);
+            if (entry.Name == "")
+            {
+                Directory.CreateDirectory(fileName);
+                continue;
+            }
+
+            try
+            {
+                entry.ExtractToFile(fileName, true);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Error("Error occured while extracting update: " + ex.Message);
+                return;
+            }
+        }
+        File.WriteAllText(Config.InjectorVersionPath, release.TagName);
+        LoggerService.Info("Done updating!");
     }
 }

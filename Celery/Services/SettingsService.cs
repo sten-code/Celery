@@ -45,7 +45,6 @@ public class SettingsService : ObservableObject, ISettingsService
         Settings.Add(new BooleanSetting("Auto Inject", "autoinject", "Automatically injects when Roblox opens.", false, BooleanSettingChanged));
         Settings.Add(new ChoiceSetting("Theme", "theme", "Customize the look of Celery.", themeService.Themes.Keys.ToList(), 0, RestartOnChanged));
         Settings.Add(new ChoiceSetting("Editor", "editor", "The editor used for scripts, Ace is better for lower end machines, Monaco has more features.", ["Monaco", "Ace"], 0, RestartOnChanged));
-        Settings.Add(new BooleanSetting("Auto Fix Errors", "autofixerrors", "Disable this if your internet is slow and you have auto inject enabled. Automatically force close Celery and Roblox when scanning takes too long.", true, BooleanSettingChanged));
         Load();
         ThemeService.SetTheme(GetSetting<string>("theme"));
     }

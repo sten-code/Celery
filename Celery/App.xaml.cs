@@ -215,6 +215,7 @@ public partial class App
         ServiceProvider.GetRequiredService<IThemeService>();
 
         ServiceProvider.GetRequiredService<IUpdateService>().UpdateUI();
+        ServiceProvider.GetRequiredService<IUpdateService>().UpdateInjector();
 
         // Start the lsp
         string lspPath = Path.Combine(Config.LspPath, "main.exe");
